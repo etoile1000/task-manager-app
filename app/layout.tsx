@@ -1,0 +1,29 @@
+import type { Metadata } from "next";
+import { ServiceWorkerUnregister } from "@/components/service-worker-unregister";
+import "./globals.css";
+
+export const metadata: Metadata = {
+  title: "タスク管理",
+  description: "優先度 × 期限でスコアリング自動ソート",
+};
+
+export default function RootLayout({
+  children,
+}: Readonly<{
+  children: React.ReactNode;
+}>) {
+  return (
+    <html lang="ja">
+      <head>
+        <link
+          rel="stylesheet"
+          href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css"
+        />
+      </head>
+      <body>
+        <ServiceWorkerUnregister />
+        {children}
+      </body>
+    </html>
+  );
+}
