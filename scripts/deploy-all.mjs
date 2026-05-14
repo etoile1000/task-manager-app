@@ -113,7 +113,7 @@ function sh(cmd, opts = {}) {
 }
 
 try {
-  sh("git remote remove origin");
+  sh("git remote remove origin 2>/dev/null || true");
 } catch {
   /* none */
 }
