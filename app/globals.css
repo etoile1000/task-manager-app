@@ -364,15 +364,19 @@ input[type="date"]::-webkit-calendar-picker-indicator { opacity: 0.6; cursor: po
     display: none !important;
   }
 
+  /* 共有（印刷）用以外のモーダルは出さない（テーマタブ・カテゴリ管理等） */
   .modal-overlay {
+    display: none !important;
+  }
+
+  .modal-overlay:has(.print-preview) {
     display: block !important;
     position: static !important;
     background: none !important;
     padding: 0 !important;
   }
 
-  .modal,
-  .share-modal {
+  .modal-overlay:has(.print-preview) .share-modal {
     background: var(--bg) !important;
     color: var(--text) !important;
     border: none !important;
@@ -382,10 +386,8 @@ input[type="date"]::-webkit-calendar-picker-indicator { opacity: 0.6; cursor: po
     overflow: visible !important;
   }
 
-  .modal-header,
-  .share-row,
-  .share-scope-btns,
-  .modal-actions {
+  /* プレビュー以外のモーダル UI（ヘッダー・カテゴリ・スコープ・印刷ボタン等）を非表示 */
+  .modal-overlay:has(.print-preview) .share-modal > *:not(.print-preview) {
     display: none !important;
   }
 
@@ -396,6 +398,18 @@ input[type="date"]::-webkit-calendar-picker-indicator { opacity: 0.6; cursor: po
     background: var(--card-bg) !important;
     color: var(--text) !important;
     border-radius: 0 !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  /* 優先度バッジ（.p-urgent 等）の背景・文字色をブラウザの省インク設定で潰さない */
+  .print-preview .p-badge,
+  .print-preview .p-urgent,
+  .print-preview .p-high,
+  .print-preview .p-mid,
+  .print-preview .p-low {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
   }
 
   .print-preview .print-header {
@@ -421,27 +435,36 @@ input[type="date"]::-webkit-calendar-picker-indicator { opacity: 0.6; cursor: po
   }
 
   .print-preview .print-table td {
-    color: var(--text) !important;
     border-bottom-color: var(--border) !important;
+  }
+
+  .print-preview .print-table td:nth-child(1):not(.print-td-done) {
+    color: var(--text) !important;
+  }
+
+  .print-preview .print-table td:nth-child(1).print-td-done {
+    text-decoration: line-through !important;
+    color: var(--text-secondary) !important;
+  }
+
+  .print-preview .print-table td:nth-child(3):not(.p-overdue),
+  .print-preview .print-table td:nth-child(4) {
+    color: var(--text) !important;
+  }
+
+  .print-preview .print-table td.p-overdue {
+    color: #a32d2d !important;
+  }
+
+  [data-theme="cyber"] .print-preview .print-table td.p-overdue {
+    color: #fca5a5 !important;
   }
 
   .print-preview .print-preview-empty {
     color: var(--text-secondary) !important;
   }
 
-  .print-preview .print-td-done {
-    text-decoration: line-through !important;
-    color: var(--text-secondary) !important;
-  }
-
   .print-preview .print-td-note {
     color: var(--text-secondary) !important;
   }
-
-  /* 暗色テーマでは期限超過の強調色を明るめにしてコントラストを確保 */
-  [data-theme="cyber"] .print-preview .p-overdue {
-    color: #fca5a5 !important;
-  }
-
-  /* 優先度バッジは .p-* の配色をそのまま利用 */
 }
