@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { ServiceWorkerUnregister } from "@/components/service-worker-unregister";
+import { SplashScreen } from "@/components/splash-screen";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -22,6 +23,7 @@ export default function RootLayout({
         />
       </head>
       <body>
+        <SplashScreen />
         <ServiceWorkerUnregister />
         {children}
       </body>
