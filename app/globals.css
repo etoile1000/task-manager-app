@@ -313,11 +313,40 @@ input[type="date"]::-webkit-calendar-picker-indicator { opacity: 0.6; cursor: po
 /* Pro バッジ */
 .pro-badge { display: inline-flex; align-items: center; gap: 3px; padding: 2px 7px; border-radius: 100px; background: linear-gradient(135deg,#f59e0b,#ef4444); color: #fff; font-size: 10px; font-weight: 700; margin-left: 6px; }
 
-/* 写真アップロード */
-.upload-zone { border: 2px dashed var(--border-secondary); border-radius: var(--radius-md); padding: 1.5rem; text-align: center; cursor: pointer; transition: all 0.15s; margin-top: 4px; }
-.upload-zone:hover { border-color: var(--accent); background: var(--bg-secondary); }
+/* 写真アップロード（点線は ::before で内側に描画し、角丸の欠けを防ぐ） */
+.upload-zone {
+  position: relative;
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+  border-radius: var(--radius-md);
+  padding: 1.5rem;
+  margin-top: 4px;
+  text-align: center;
+  cursor: pointer;
+  background-color: var(--bg);
+  border: none;
+  overflow: visible;
+  transition: background-color 0.15s;
+}
+.upload-zone::before {
+  content: "";
+  position: absolute;
+  inset: 1px;
+  box-sizing: border-box;
+  border-radius: calc(var(--radius-md) - 1px);
+  border: 2px dashed var(--border-secondary);
+  pointer-events: none;
+}
+.upload-zone:hover {
+  background-color: var(--bg-secondary);
+}
+.upload-zone:hover::before {
+  border-color: var(--accent);
+}
+.upload-zone > * { position: relative; z-index: 1; }
 .upload-zone i { font-size: 28px; color: var(--text-tertiary); margin-bottom: 8px; display: block; }
-.upload-zone p { font-size: 13px; color: var(--text-secondary); }
+.upload-zone p { font-size: 13px; color: var(--text-secondary); margin: 0; }
 .upload-zone input { display: none; }
 
 /* カテゴリ管理 */
