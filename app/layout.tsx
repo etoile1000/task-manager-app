@@ -8,9 +8,14 @@ export const metadata: Metadata = {
   description: "Do something. Reach nova.",
   manifest: "/manifest.json",
   icons: {
-    icon: "/favicon.ico",
-    apple: "/apple-touch-icon.png",
-    shortcut: "/favicon.ico",
+    icon: [{ url: "/favicon.ico", sizes: "any", type: "image/x-icon" }],
+    apple: [
+      {
+        url: "/apple-touch-icon.png",
+        sizes: "180x180",
+        type: "image/png",
+      },
+    ],
   },
 };
 
