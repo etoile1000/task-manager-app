@@ -442,7 +442,15 @@ export default function TaskDashboard({
         <div className="header">
           <div className="header-left">
             <div className="header-title">
-              <i className="ti ti-layout-list" /> タスク管理
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src="/icon-192.png"
+                alt=""
+                className="header-app-icon"
+                width={28}
+                height={28}
+              />
+              Doova
             </div>
             <div className="header-sub">
               優先度 × 期限でスコアリング自動ソート · {userEmail}
