@@ -1,0 +1,374 @@
+/* Ported from doova_login.html — CSS Module */
+
+.shell,
+.shell *,
+.shell *::before,
+.shell *::after {
+  box-sizing: border-box;
+}
+
+.shell {
+  --void: #0e0d0c;
+  --ember: #f97316;
+  --pulse: #ec4899;
+  --drift: #8b5cf6;
+  --haze: #e8e0ff;
+  --haze-dim: rgba(232, 224, 255, 0.55);
+  --haze-faint: rgba(232, 224, 255, 0.08);
+  --grad: linear-gradient(135deg, var(--ember), var(--pulse), var(--drift));
+
+  position: relative;
+  min-height: 100vh;
+  height: 100%;
+  background: var(--void);
+  font-family: var(--font-outfit), "Outfit", sans-serif;
+  color: var(--haze);
+  overflow: hidden;
+}
+
+.stars {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.star {
+  position: absolute;
+  border-radius: 50%;
+  background: var(--haze);
+  animation: twinkle var(--d, 3s) ease-in-out infinite var(--delay, 0s);
+  opacity: 0;
+}
+
+@keyframes twinkle {
+  0%,
+  100% {
+    opacity: 0;
+    transform: scale(1);
+  }
+  50% {
+    opacity: var(--op, 0.6);
+    transform: scale(1.4);
+  }
+}
+
+.glowOrb {
+  position: fixed;
+  pointer-events: none;
+  border-radius: 50%;
+  filter: blur(120px);
+  z-index: 0;
+}
+
+.glowA {
+  width: 500px;
+  height: 500px;
+  background: radial-gradient(circle, rgba(249, 115, 22, 0.18) 0%, transparent 70%);
+  top: -120px;
+  left: -100px;
+  animation: drift-a 12s ease-in-out infinite;
+}
+
+.glowB {
+  width: 460px;
+  height: 460px;
+  background: radial-gradient(circle, rgba(139, 92, 246, 0.2) 0%, transparent 70%);
+  bottom: -100px;
+  right: -80px;
+  animation: drift-b 14s ease-in-out infinite;
+}
+
+.glowC {
+  width: 320px;
+  height: 320px;
+  background: radial-gradient(circle, rgba(236, 72, 153, 0.14) 0%, transparent 70%);
+  top: 40%;
+  left: 55%;
+  animation: drift-c 10s ease-in-out infinite;
+}
+
+@keyframes drift-a {
+  0%,
+  100% {
+    transform: translate(0, 0);
+  }
+  50% {
+    transform: translate(40px, 30px);
+  }
+}
+
+@keyframes drift-b {
+  0%,
+  100% {
+    transform: translate(0, 0);
+  }
+  50% {
+    transform: translate(-30px, -40px);
+  }
+}
+
+@keyframes drift-c {
+  0%,
+  100% {
+    transform: translate(0, 0);
+  }
+  50% {
+    transform: translate(-20px, 20px);
+  }
+}
+
+.gridLines {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background-image:
+    linear-gradient(rgba(232, 224, 255, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(232, 224, 255, 0.03) 1px, transparent 1px);
+  background-size: 60px 60px;
+}
+
+.pageMain {
+  position: relative;
+  z-index: 10;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem 1.5rem;
+}
+
+.card {
+  position: relative;
+  width: 100%;
+  max-width: 420px;
+  background: rgba(14, 13, 12, 0.7);
+  border: 0.5px solid rgba(232, 224, 255, 0.12);
+  border-radius: 24px;
+  padding: 3rem 2.5rem 2.5rem;
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  animation: card-in 0.8s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 10%;
+  right: 10%;
+  height: 1px;
+  background: var(--grad);
+  opacity: 0.5;
+  border-radius: 99px;
+}
+
+@keyframes card-in {
+  from {
+    opacity: 0;
+    transform: translateY(24px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.logoWrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 2.5rem;
+  animation: fade-in 0.9s 0.15s both;
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.logoIcon {
+  width: 64px;
+  height: 64px;
+  border-radius: 18px;
+  background: var(--grad);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 0 32px rgba(236, 72, 153, 0.3);
+}
+
+.logoIcon svg {
+  width: 34px;
+  height: 34px;
+}
+
+.logoWordmark {
+  font-family: var(--font-outfit), "Outfit", sans-serif;
+  font-size: 42px;
+  font-weight: 500;
+  letter-spacing: -0.03em;
+  color: var(--haze);
+  line-height: 1;
+}
+
+.gradText {
+  background: var(--grad);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.tagline {
+  font-size: 12px;
+  font-weight: 300;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--haze-dim);
+  margin-top: -4px;
+}
+
+.divider {
+  width: 48px;
+  height: 0.5px;
+  background: rgba(232, 224, 255, 0.15);
+  margin: 0 auto 2rem;
+  animation: fade-in 0.9s 0.25s both;
+}
+
+.sub {
+  text-align: center;
+  font-size: 13.5px;
+  color: var(--haze-dim);
+  line-height: 1.65;
+  margin-bottom: 2rem;
+  animation: fade-in 0.9s 0.3s both;
+}
+
+.err {
+  font-size: 13px;
+  line-height: 1.6;
+  color: #fecaca;
+  background: rgba(239, 68, 68, 0.15);
+  border: 0.5px solid rgba(248, 113, 113, 0.35);
+  border-radius: 14px;
+  padding: 0.85rem 1rem;
+  margin: 0 0 1.5rem;
+  text-align: left;
+  animation: fade-in 0.9s 0.32s both;
+}
+
+.btnGoogle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  width: 100%;
+  padding: 14px 20px;
+  border-radius: 14px;
+  border: 0.5px solid rgba(232, 224, 255, 0.18);
+  background: rgba(232, 224, 255, 0.06);
+  color: var(--haze);
+  font-family: var(--font-outfit), "Outfit", sans-serif;
+  font-size: 15px;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  cursor: pointer;
+  transition:
+    background 0.2s,
+    border-color 0.2s,
+    transform 0.15s,
+    box-shadow 0.2s;
+  animation: fade-in 0.9s 0.4s both;
+  position: relative;
+  overflow: hidden;
+}
+
+.btnGoogle::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: var(--grad);
+  opacity: 0;
+  transition: opacity 0.25s;
+  border-radius: inherit;
+}
+
+.btnGoogle:hover:not(:disabled) {
+  border-color: rgba(236, 72, 153, 0.4);
+  background: rgba(232, 224, 255, 0.1);
+  transform: translateY(-1px);
+  box-shadow: 0 8px 32px rgba(139, 92, 246, 0.2);
+}
+
+.btnGoogle:hover:not(:disabled)::before {
+  opacity: 0.07;
+}
+
+.btnGoogle:active:not(:disabled) {
+  transform: translateY(0) scale(0.99);
+}
+
+.btnGoogle:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.gIcon {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+  position: relative;
+  z-index: 1;
+}
+
+.btnlabel {
+  position: relative;
+  z-index: 1;
+}
+
+.footer {
+  margin-top: 2rem;
+  text-align: center;
+  font-size: 11px;
+  color: rgba(232, 224, 255, 0.25);
+  letter-spacing: 0.04em;
+  animation: fade-in 0.9s 0.55s both;
+}
+
+.footer a {
+  color: rgba(232, 224, 255, 0.4);
+  text-decoration: none;
+}
+
+.footer a:hover {
+  color: var(--haze-dim);
+}
+
+@media (max-width: 480px) {
+  .card {
+    padding: 2.5rem 1.75rem 2rem;
+    border-radius: 20px;
+  }
+
+  .logoWordmark {
+    font-size: 36px;
+  }
+
+  .logoIcon {
+    width: 56px;
+    height: 56px;
+    border-radius: 16px;
+  }
+}

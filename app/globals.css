@@ -48,6 +48,16 @@ body {
   transition: color 0.3s;
 }
 
+html:has([data-login-page]) {
+  height: 100%;
+}
+
+body:has([data-login-page]) {
+  padding: 0;
+  overflow: hidden;
+  height: 100%;
+}
+
 .container { max-width: 720px; margin: 0 auto; position: relative; }
 
 /* カード系は半透明対応 */
