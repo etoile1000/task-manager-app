@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>タスク管理 — タスク管理を、もっと自分らしく。</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;700;900&family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+
+:root{
+  --ink:#0e0d0c;
+  --paper:#faf8f5;
+  --paper2:#f2efe9;
+  --accent:#e8470a;
+  --accent2:#1a56db;
+  --muted:#8a857c;
+  --border:rgba(14,13,12,0.1);
+  --font-jp:'Zen Kaku Gothic New',sans-serif;
+  --font-en:'DM Serif Display',serif;
+  --font-mono:'DM Mono',monospace;
+}
+
+html{scroll-behavior:smooth}
+body{font-family:var(--font-jp);background:var(--paper);color:var(--ink);overflow-x:hidden}
+
+/* ===== NAV ===== */
+nav{
+  position:fixed;top:0;left:0;right:0;z-index:100;
+  padding:0 2rem;height:60px;
+  display:flex;align-items:center;justify-content:space-between;
+  background:rgba(250,248,245,0.85);backdrop-filter:blur(12px);
+  border-bottom:0.5px solid var(--border);
+}
+.nav-logo{font-family:var(--font-mono);font-size:15px;font-weight:500;letter-spacing:-.02em}
+.nav-logo span{color:var(--accent)}
+.nav-links{display:flex;align-items:center;gap:2rem}
+.nav-links a{font-size:13px;color:var(--muted);text-decoration:none;transition:color .15s}
+.nav-links a:hover{color:var(--ink)}
+.nav-cta{
+  padding:8px 20px;border-radius:4px;
+  background:var(--ink);color:var(--paper);
+  font-size:13px;font-weight:700;font-family:var(--font-jp);
+  text-decoration:none;transition:all .15s;
+  border:1.5px solid var(--ink);
+}
+.nav-cta:hover{background:var(--accent);border-color:var(--accent)}
+
+/* ===== HERO ===== */
+.hero{
+  min-height:100vh;padding:120px 2rem 80px;
+  display:grid;place-items:center;
+  position:relative;overflow:hidden;
+}
+.hero-bg{
+  position:absolute;inset:0;
+  background:
+    radial-gradient(ellipse 60% 50% at 80% 20%,rgba(232,71,10,0.08) 0%,transparent 70%),
+    radial-gradient(ellipse 40% 60% at 10% 80%,rgba(26,86,219,0.06) 0%,transparent 70%);
+}
+.hero-grid{
+  position:absolute;inset:0;
+  background-image:linear-gradient(var(--border) 1px,transparent 1px),linear-gradient(90deg,var(--border) 1px,transparent 1px);
+  background-size:60px 60px;
+  mask-image:radial-gradient(ellipse 80% 80% at 50% 50%,black 30%,transparent 100%);
+}
+.hero-inner{position:relative;text-align:center;max-width:800px}
+.hero-eyebrow{
+  display:inline-flex;align-items:center;gap:8px;
+  font-family:var(--font-mono);font-size:11px;font-weight:500;
+  color:var(--accent);letter-spacing:.12em;text-transform:uppercase;
+  padding:5px 14px;border:1px solid rgba(232,71,10,0.3);border-radius:100px;
+  margin-bottom:2rem;
+  opacity:0;animation:fadeUp .6s .1s ease forwards;
+}
+.hero-eyebrow::before{content:'';width:6px;height:6px;border-radius:50%;background:var(--accent);animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+
+.hero-title{
+  font-family:var(--font-en);font-size:clamp(52px,8vw,96px);
+  line-height:1.0;letter-spacing:-.03em;
+  margin-bottom:1.5rem;
+  opacity:0;animation:fadeUp .8s .2s ease forwards;
+}
+.hero-title em{font-style:italic;color:var(--accent)}
+.hero-title-jp{
+  font-family:var(--font-jp);font-size:clamp(16px,2.5vw,22px);
+  font-weight:400;color:var(--muted);letter-spacing:.05em;
+  margin-bottom:2.5rem;
+  opacity:0;animation:fadeUp .8s .35s ease forwards;
+}
+.hero-actions{
+  display:flex;align-items:center;justify-content:center;gap:1rem;
+  flex-wrap:wrap;
+  opacity:0;animation:fadeUp .8s .5s ease forwards;
+}
+.btn-primary{
+  padding:14px 32px;border-radius:4px;
+  background:var(--ink);color:var(--paper);
+  font-size:15px;font-weight:700;font-family:var(--font-jp);
+  text-decoration:none;border:1.5px solid var(--ink);
+  transition:all .2s;display:inline-flex;align-items:center;gap:8px;
+}
+.btn-primary:hover{background:var(--accent);border-color:var(--accent);transform:translateY(-2px)}
+.btn-secondary{
+  padding:14px 32px;border-radius:4px;
+  background:transparent;color:var(--ink);
+  font-size:15px;font-weight:700;font-family:var(--font-jp);
+  text-decoration:none;border:1.5px solid var(--border);
+  transition:all .2s;
+}
+.btn-secondary:hover{border-color:var(--ink);transform:translateY(-2px)}
+.hero-note{font-size:12px;color:var(--muted);margin-top:1rem;opacity:0;animation:fadeUp .8s .65s ease forwards}
+
+@keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+
+/* ===== MOCKUP ===== */
+.mockup-section{
+  padding:40px 2rem 100px;
+  display:flex;justify-content:center;
+}
+.mockup-wrap{
+  width:100%;max-width:860px;
+  border-radius:16px;overflow:hidden;
+  box-shadow:0 40px 100px rgba(14,13,12,0.18),0 0 0 1px var(--border);
+  opacity:0;animation:fadeUp 1s .8s ease forwards;
+  position:relative;
+}
+.mockup-bar{
+  background:#1a1a18;padding:12px 16px;
+  display:flex;align-items:center;gap:8px;
+}
+.mockup-dot{width:12px;height:12px;border-radius:50%}
+.mockup-url{
+  flex:1;background:rgba(255,255,255,0.08);border-radius:6px;
+  padding:4px 12px;font-family:var(--font-mono);font-size:11px;color:rgba(255,255,255,.5);
+  text-align:center;
+}
+.mockup-body{
+  background:linear-gradient(135deg,#f97316,#ec4899,#8b5cf6);
+  padding:24px;min-height:420px;
+  display:flex;flex-direction:column;gap:14px;
+}
+/* フェイクUI */
+.fake-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.fake-title{font-size:18px;font-weight:500;color:#fff;display:flex;align-items:center;gap:8px}
+.fake-actions{display:flex;gap:8px}
+.fake-btn{padding:7px 16px;border-radius:6px;background:rgba(255,255,255,0.2);color:#fff;font-size:12px;font-weight:600;backdrop-filter:blur(8px)}
+.fake-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.fake-stat{background:rgba(255,255,255,0.15);border-radius:10px;padding:12px;backdrop-filter:blur(8px)}
+.fake-stat-num{font-size:22px;font-weight:700;color:#fff}
+.fake-stat-label{font-size:10px;color:rgba(255,255,255,.7);margin-top:2px}
+.fake-cards{display:flex;flex-direction:column;gap:8px}
+.fake-card{
+  background:rgba(255,255,255,0.18);border-radius:10px;padding:12px 14px;
+  display:flex;align-items:center;gap:12px;backdrop-filter:blur(10px);
+  border:0.5px solid rgba(255,255,255,.25);
+}
+.fake-check{width:18px;height:18px;border-radius:50%;border:1.5px solid rgba(255,255,255,.6);flex-shrink:0}
+.fake-check.done{background:rgba(255,255,255,.8);display:flex;align-items:center;justify-content:center;font-size:10px;color:#333;border-color:transparent}
+.fake-card-body{flex:1}
+.fake-card-name{font-size:13px;font-weight:600;color:#fff;margin-bottom:4px}
+.fake-card-name.done{text-decoration:line-through;opacity:.5}
+.fake-card-meta{display:flex;gap:6px}
+.fake-badge{padding:2px 8px;border-radius:100px;font-size:10px;font-weight:700}
+.fb-urgent{background:rgba(254,202,202,.9);color:#991b1b}
+.fb-high{background:rgba(254,243,199,.9);color:#92400e}
+.fb-mid{background:rgba(219,234,254,.9);color:#1e40af}
+.fb-cat{background:rgba(255,255,255,.2);color:#fff;border:0.5px solid rgba(255,255,255,.3)}
+.fake-due{font-size:10px;color:rgba(255,255,255,.7);display:flex;align-items:center;gap:3px}
+
+/* ===== FEATURES ===== */
+.features{padding:100px 2rem;max-width:1100px;margin:0 auto}
+.section-label{
+  font-family:var(--font-mono);font-size:11px;font-weight:500;
+  color:var(--accent);letter-spacing:.12em;text-transform:uppercase;
+  margin-bottom:1rem;
+}
+.section-title{
+  font-family:var(--font-en);font-size:clamp(36px,5vw,60px);
+  line-height:1.1;letter-spacing:-.02em;margin-bottom:1.5rem;
+}
+.section-title em{font-style:italic;color:var(--accent)}
+.section-sub{font-size:16px;color:var(--muted);max-width:480px;line-height:1.7;margin-bottom:4rem}
+
+.features-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:2px;background:var(--border)}
+.feature-item{
+  background:var(--paper);padding:2.5rem;
+  transition:background .2s;
+}
+.feature-item:hover{background:var(--paper2)}
+.feature-icon{
+  width:48px;height:48px;border-radius:10px;
+  background:var(--ink);color:var(--paper);
+  display:flex;align-items:center;justify-content:center;
+  font-size:22px;margin-bottom:1.5rem;
+}
+.feature-name{font-size:18px;font-weight:700;margin-bottom:.75rem;letter-spacing:-.01em}
+.feature-desc{font-size:14px;color:var(--muted);line-height:1.7}
+
+/* ===== BG SHOWCASE ===== */
+.bg-showcase{padding:100px 2rem;background:var(--ink);overflow:hidden;position:relative}
+.bg-showcase-inner{max-width:1100px;margin:0 auto}
+.bg-showcase .section-label{color:#f97316}
+.bg-showcase .section-title{color:var(--paper)}
+.bg-showcase .section-title em{color:#f97316}
+.bg-showcase .section-sub{color:rgba(250,248,245,.5)}
+.bg-grid-showcase{
+  display:grid;grid-template-columns:repeat(4,1fr);gap:12px;
+  margin-top:3rem;
+}
+.bg-swatch{
+  border-radius:12px;aspect-ratio:4/3;overflow:hidden;position:relative;
+  cursor:pointer;transition:transform .2s;
+}
+.bg-swatch:hover{transform:scale(1.04)}
+.bg-swatch-label{
+  position:absolute;bottom:0;left:0;right:0;
+  padding:8px 12px;font-size:11px;font-weight:700;color:#fff;
+  background:linear-gradient(transparent,rgba(0,0,0,.5));
+}
+.anim-preview{width:100%;height:100%;position:relative;overflow:hidden}
+canvas.mini{width:100%;height:100%;display:block}
+
+/* ===== PRICING ===== */
+.pricing{padding:100px 2rem;max-width:800px;margin:0 auto;text-align:center}
+.pricing .section-label{justify-content:center;display:flex}
+.pricing .section-title{text-align:center}
+.pricing .section-sub{margin:0 auto 4rem;text-align:center}
+.pricing-grid{display:grid;grid-template-columns:1fr 1fr;gap:2px;background:var(--border);border-radius:16px;overflow:hidden;text-align:left}
+.plan{background:var(--paper);padding:2.5rem}
+.plan.pro{background:var(--ink);color:var(--paper)}
+.plan-name{font-family:var(--font-mono);font-size:11px;font-weight:500;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:1rem}
+.plan.pro .plan-name{color:rgba(250,248,245,.5)}
+.plan-price{font-family:var(--font-en);font-size:52px;line-height:1;letter-spacing:-.03em;margin-bottom:.5rem}
+.plan-price span{font-size:16px;font-family:var(--font-jp);font-weight:400;opacity:.6}
+.plan-desc{font-size:13px;color:var(--muted);margin-bottom:2rem;line-height:1.6}
+.plan.pro .plan-desc{color:rgba(250,248,245,.5)}
+.plan-features{list-style:none;display:flex;flex-direction:column;gap:.75rem;margin-bottom:2.5rem}
+.plan-features li{font-size:14px;display:flex;align-items:flex-start;gap:10px}
+.plan-features li::before{content:'✓';font-weight:700;color:var(--accent);flex-shrink:0;margin-top:1px}
+.plan.pro .plan-features li::before{color:#f97316}
+.plan-features li.muted{color:var(--muted);opacity:.5}
+.plan-features li.muted::before{content:'—';color:currentColor}
+.plan-btn{
+  display:block;text-align:center;padding:12px 24px;border-radius:4px;
+  font-size:14px;font-weight:700;font-family:var(--font-jp);text-decoration:none;
+  transition:all .2s;border:1.5px solid var(--ink);
+  background:transparent;color:var(--ink);
+}
+.plan-btn:hover{background:var(--ink);color:var(--paper)}
+.plan.pro .plan-btn{background:var(--accent);border-color:var(--accent);color:#fff}
+.plan.pro .plan-btn:hover{background:#c73d08;border-color:#c73d08}
+
+/* ===== CTA ===== */
+.cta-section{
+  padding:120px 2rem;text-align:center;
+  background:linear-gradient(135deg,var(--ink) 0%,#1a1b2e 100%);
+  position:relative;overflow:hidden;
+}
+.cta-bg{
+  position:absolute;inset:0;
+  background:radial-gradient(ellipse 60% 60% at 50% 50%,rgba(232,71,10,0.15),transparent 70%);
+}
+.cta-inner{position:relative}
+.cta-title{
+  font-family:var(--font-en);font-size:clamp(40px,6vw,72px);
+  color:var(--paper);letter-spacing:-.02em;margin-bottom:1rem;line-height:1.1;
+}
+.cta-title em{font-style:italic;color:#f97316}
+.cta-sub{font-size:16px;color:rgba(250,248,245,.5);margin-bottom:3rem}
+.cta-btn{
+  display:inline-flex;align-items:center;gap:10px;
+  padding:16px 40px;border-radius:4px;
+  background:var(--accent);color:#fff;
+  font-size:16px;font-weight:700;font-family:var(--font-jp);
+  text-decoration:none;transition:all .2s;
+  border:1.5px solid var(--accent);
+}
+.cta-btn:hover{background:#c73d08;border-color:#c73d08;transform:translateY(-3px)}
+.cta-note{font-size:12px;color:rgba(250,248,245,.35);margin-top:1.5rem}
+
+/* ===== FOOTER ===== */
+footer{
+  padding:2rem;background:var(--ink);
+  display:flex;align-items:center;justify-content:space-between;
+  border-top:0.5px solid rgba(255,255,255,.08);
+  flex-wrap:wrap;gap:1rem;
+}
+.footer-logo{font-family:var(--font-mono);font-size:14px;color:rgba(255,255,255,.4)}
+.footer-logo span{color:#f97316}
+.footer-copy{font-size:12px;color:rgba(255,255,255,.25)}
+
+/* ===== SCROLL REVEAL ===== */
+.reveal{opacity:0;transform:translateY(30px);transition:opacity .7s ease,transform .7s ease}
+.reveal.visible{opacity:1;transform:translateY(0)}
+
+@media(max-width:768px){
+  .features-grid{grid-template-columns:1fr}
+  .bg-grid-showcase{grid-template-columns:repeat(2,1fr)}
+  .pricing-grid{grid-template-columns:1fr}
+  .nav-links{display:none}
+  .fake-stats{grid-template-columns:repeat(2,1fr)}
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-logo">task<span>.</span>mgr</div>
+  <div class="nav-links">
+    <a href="#features">機能</a>
+    <a href="#backgrounds">背景</a>
+    <a href="#pricing">料金</a>
+  </div>
+  <a href="./index.html" class="nav-cta">無料で使う →</a>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-bg"></div>
+  <div class="hero-grid"></div>
+  <div class="hero-inner">
+    <div class="hero-eyebrow">タスク管理ツール</div>
+    <h1 class="hero-title">Your Tasks,<br><em>Your Style.</em></h1>
+    <p class="hero-title-jp">タスク管理を、もっと自分らしく。</p>
+    <div class="hero-actions">
+      <a href="./index.html" class="btn-primary">今すぐ無料で使う →</a>
+      <a href="#features" class="btn-secondary">機能を見る</a>
+    </div>
+    <p class="hero-note">クレジットカード不要 · 無料プランあり</p>
+  </div>
+</section>
+
+<!-- MOCKUP -->
+<section class="mockup-section">
+  <div class="mockup-wrap">
+    <div class="mockup-bar">
+      <div class="mockup-dot" style="background:#ff5f57"></div>
+      <div class="mockup-dot" style="background:#febc2e"></div>
+      <div class="mockup-dot" style="background:#28c840"></div>
+      <div class="mockup-url">task-manager.vercel.app</div>
+    </div>
+    <div class="mockup-body">
+      <div class="fake-header">
+        <div class="fake-title">☰ タスク管理</div>
+        <div class="fake-actions">
+          <div class="fake-btn">🎨</div>
+          <div class="fake-btn">共有</div>
+          <div class="fake-btn">＋ 追加</div>
+        </div>
+      </div>
+      <div class="fake-stats">
+        <div class="fake-stat"><div class="fake-stat-num">8</div><div class="fake-stat-label">未完了</div></div>
+        <div class="fake-stat"><div class="fake-stat-num" style="color:#fca5a5">2</div><div class="fake-stat-label">緊急</div></div>
+        <div class="fake-stat"><div class="fake-stat-num" style="color:#f87171">1</div><div class="fake-stat-label">期限超過</div></div>
+        <div class="fake-stat"><div class="fake-stat-num" style="color:#fcd34d">3</div><div class="fake-stat-label">今日期限</div></div>
+      </div>
+      <div class="fake-cards">
+        <div class="fake-card">
+          <div class="fake-check"></div>
+          <div class="fake-card-body">
+            <div class="fake-card-name">引き継ぎAI β公開</div>
+            <div class="fake-card-meta">
+              <span class="fake-badge fb-urgent">緊急</span>
+              <span class="fake-badge fb-cat">etoile</span>
+              <span class="fake-due">📅 今日</span>
+            </div>
+          </div>
+        </div>
+        <div class="fake-card">
+          <div class="fake-check"></div>
+          <div class="fake-card-body">
+            <div class="fake-card-name">入金管理 月次レポート作成</div>
+            <div class="fake-card-meta">
+              <span class="fake-badge fb-high">高</span>
+              <span class="fake-badge fb-cat">仕事</span>
+              <span class="fake-due">📅 明日</span>
+            </div>
+          </div>
+        </div>
+        <div class="fake-card">
+          <div class="fake-check done">✓</div>
+          <div class="fake-card-body">
+            <div class="fake-card-name done">LP作成</div>
+            <div class="fake-card-meta">
+              <span class="fake-badge fb-mid">中</span>
+              <span class="fake-badge fb-cat">etoile</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FEATURES -->
+<section class="features" id="features">
+  <div class="reveal">
+    <div class="section-label">Features</div>
+    <h2 class="section-title">やることは<br><em>全部ここに。</em></h2>
+    <p class="section-sub">優先度と期限を入力するだけで、自動的に重要なものが上に並ぶ。考える前に、動ける。</p>
+  </div>
+  <div class="features-grid reveal">
+    <div class="feature-item">
+      <div class="feature-icon">⚡</div>
+      <div class="feature-name">スコアリング自動ソート</div>
+      <div class="feature-desc">優先度×期限で自動スコアリング。緊急度が高いものが常に上に来るから、「何をすべきか」で迷わない。</div>
+    </div>
+    <div class="feature-item">
+      <div class="feature-icon">🏷️</div>
+      <div class="feature-name">カテゴリ自由編集</div>
+      <div class="feature-desc">仕事・副業・個人など、自分の生活に合わせてカテゴリを自由に作成・編集。他のツールにはない柔軟さ。</div>
+    </div>
+    <div class="feature-item">
+      <div class="feature-icon">📤</div>
+      <div class="feature-name">共有PDF出力</div>
+      <div class="feature-desc">「今週これだけ抱えてます」をワンクリックで一覧化。カテゴリを選んで印刷・PDF共有。</div>
+    </div>
+    <div class="feature-item">
+      <div class="feature-icon">🎨</div>
+      <div class="feature-name">テーマ切り替え</div>
+      <div class="feature-desc">ミニマル・サイバー・パステルの3テーマを無料で利用可能。気分で切り替えて、毎日開きたくなるツールに。</div>
+    </div>
+    <div class="feature-item">
+      <div class="feature-icon">🖼️</div>
+      <div class="feature-name">背景カスタマイズ <span style="font-size:10px;padding:2px 6px;background:#e8470a;color:#fff;border-radius:4px;font-weight:700;vertical-align:middle">PRO</span></div>
+      <div class="feature-desc">サンセット・星空・桜吹雪など12種の背景。自分の写真も設定可能。世界で唯一、自分だけのタスク管理画面。</div>
+    </div>
+    <div class="feature-item">
+      <div class="feature-icon">☁️</div>
+      <div class="feature-name">マルチデバイス同期 <span style="font-size:10px;padding:2px 6px;background:#e8470a;color:#fff;border-radius:4px;font-weight:700;vertical-align:middle">PRO</span></div>
+      <div class="feature-desc">PCで入れたタスクがスマホでも見られる。どこからでもアクセスできて、情報が途切れない。（近日公開）</div>
+    </div>
+  </div>
+</section>
+
+<!-- BG SHOWCASE -->
+<section class="bg-showcase" id="backgrounds">
+  <div class="bg-showcase-inner">
+    <div class="reveal">
+      <div class="section-label">Pro Backgrounds</div>
+      <h2 class="section-title">背景が変わると、<br><em>気分も変わる。</em></h2>
+      <p class="section-sub">タスク管理ツールで「背景を選べる」のは、ほぼここだけ。毎日開くツールだから、好きな見た目で使いたい。</p>
+    </div>
+    <div class="bg-grid-showcase reveal">
+      <div class="bg-swatch" style="background:linear-gradient(135deg,#f97316,#ec4899,#8b5cf6)">
+        <div class="bg-swatch-label">🌅 サンセット</div>
+      </div>
+      <div class="bg-swatch" style="background:linear-gradient(135deg,#0ea5e9,#06b6d4,#10b981)">
+        <div class="bg-swatch-label">🌊 オーシャン</div>
+      </div>
+      <div class="bg-swatch" style="background:linear-gradient(135deg,#4f46e5,#7c3aed,#059669)">
+        <div class="bg-swatch-label">🌌 オーロラ</div>
+      </div>
+      <div class="bg-swatch" style="background:linear-gradient(135deg,#1e1b4b,#312e81,#4c1d95)">
+        <div class="bg-swatch-label">🌃 ミッドナイト</div>
+      </div>
+      <div class="bg-swatch" style="background:#0f0e17;position:relative;overflow:hidden">
+        <canvas id="starsPreview" style="position:absolute;inset:0;width:100%;height:100%"></canvas>
+        <div class="bg-swatch-label">✨ 星空（アニメーション）</div>
+      </div>
+      <div class="bg-swatch" style="background:#0f0e17;position:relative;overflow:hidden">
+        <canvas id="neonPreview" style="position:absolute;inset:0;width:100%;height:100%"></canvas>
+        <div class="bg-swatch-label">🌧️ ネオン雨（アニメーション）</div>
+      </div>
+      <div class="bg-swatch" style="background:#fde8f3;position:relative;overflow:hidden">
+        <canvas id="sakuraPreview" style="position:absolute;inset:0;width:100%;height:100%"></canvas>
+        <div class="bg-swatch-label">🌸 桜吹雪（アニメーション）</div>
+      </div>
+      <div class="bg-swatch" style="background:linear-gradient(135deg,#fda4af,#f9a8d4,#c4b5fd)">
+        <div class="bg-swatch-label">🌸 ローズ</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PRICING -->
+<section class="pricing" id="pricing">
+  <div class="reveal">
+    <div class="section-label">Pricing</div>
+    <h2 class="section-title">シンプルな<br><em>料金体系。</em></h2>
+    <p class="section-sub">無料プランで基本機能をすべて使える。背景カスタマイズと同期はProで。</p>
+  </div>
+  <div class="pricing-grid reveal">
+    <div class="plan">
+      <div class="plan-name">Free</div>
+      <div class="plan-price">¥0<span> / 月</span></div>
+      <div class="plan-desc">まずは無料で試してみてください。基本機能はすべて使えます。</div>
+      <ul class="plan-features">
+        <li>タスク管理（無制限）</li>
+        <li>優先度×期限 自動ソート</li>
+        <li>カテゴリ自由編集</li>
+        <li>共有・PDF出力</li>
+        <li>カラーテーマ 3種</li>
+        <li class="muted">背景カスタマイズ</li>
+        <li class="muted">マルチデバイス同期</li>
+      </ul>
+      <a href="./index.html" class="plan-btn">無料で始める</a>
+    </div>
+    <div class="plan pro">
+      <div class="plan-name">Pro</div>
+      <div class="plan-price">¥480<span> / 月</span></div>
+      <div class="plan-desc">年払いなら¥4,800（2ヶ月分お得）。毎日使うツールだから、コーヒー1杯分で。</div>
+      <ul class="plan-features">
+        <li>Freeの全機能</li>
+        <li>グラデーション背景 8種</li>
+        <li>アニメーション背景 4種</li>
+        <li>マイ写真を背景に設定</li>
+        <li>マルチデバイス同期（近日）</li>
+        <li>優先サポート</li>
+      </ul>
+      <a href="https://buy.stripe.com/6oU8wPaznf8ZcfF0tvbwk00" class="plan-btn" target="_blank" rel="noopener noreferrer">7日間無料で試す →</a>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="cta-section">
+  <div class="cta-bg"></div>
+  <div class="cta-inner reveal">
+    <h2 class="cta-title">今日から<br><em>始めよう。</em></h2>
+    <p class="cta-sub">登録不要、クレジットカード不要。ブラウザで今すぐ使える。</p>
+    <a href="./index.html" class="cta-btn">無料で使ってみる →</a>
+    <p style="margin-top:1rem;font-size:13px;color:rgba(250,248,245,.4)">まずは無料プランで。背景カスタマイズは <a href="https://buy.stripe.com/6oU8wPaznf8ZcfF0tvbwk00" style="color:#f97316;text-decoration:none" target="_blank">Pro 7日間無料トライアル →</a></p>
+    <p class="cta-note">無料プランはずっと無料</p>
+  </div>
+</section>
+
+<footer>
+  <div class="footer-logo">task<span>.</span>mgr</div>
+  <div class="footer-copy">© 2026 etoile. All rights reserved.</div>
+</footer>
+
+<script>
+/* スクロールリビール */
+const observer = new IntersectionObserver(entries=>{
+  entries.forEach(e=>{ if(e.isIntersecting) e.target.classList.add('visible'); });
+},{threshold:0.1});
+document.querySelectorAll('.reveal').forEach(el=>observer.observe(el));
+
+/* ミニアニメーションプレビュー */
+function initMiniAnim(canvasId, type){
+  const canvas = document.getElementById(canvasId);
+  if(!canvas) return;
+  const ctx = canvas.getContext('2d');
+  function resize(){ canvas.width=canvas.offsetWidth; canvas.height=canvas.offsetHeight; }
+  resize();
+
+  if(type==='stars'){
+    const stars = Array.from({length:60},()=>({x:Math.random(),y:Math.random(),r:Math.random()*1.2+.3}));
+    function draw(){
+      ctx.clearRect(0,0,canvas.width,canvas.height);
+      stars.forEach(s=>{
+        ctx.beginPath();ctx.arc(s.x*canvas.width,s.y*canvas.height,s.r,0,Math.PI*2);
+        ctx.fillStyle=`rgba(255,255,255,${.3+Math.random()*.7})`;ctx.fill();
+      });
+      requestAnimationFrame(draw);
+    } draw();
+  } else if(type==='neon'){
+    const drops = Array.from({length:25},()=>({x:Math.random()*500,y:Math.random()*300,sp:Math.random()*6+3,len:Math.random()*20+8,color:['#00ffff','#ff00ff','#00ff88'][Math.floor(Math.random()*3)]}));
+    function draw(){
+      ctx.fillStyle='rgba(15,14,23,0.2)';ctx.fillRect(0,0,canvas.width,canvas.height);
+      drops.forEach(d=>{
+        ctx.beginPath();ctx.moveTo(d.x,d.y);ctx.lineTo(d.x,d.y+d.len);
+        ctx.strokeStyle=d.color;ctx.lineWidth=1;ctx.shadowColor=d.color;ctx.shadowBlur=4;ctx.stroke();ctx.shadowBlur=0;
+        d.y+=d.sp;if(d.y>canvas.height+30){d.y=-30;d.x=Math.random()*canvas.width;}
+      });
+      requestAnimationFrame(draw);
+    } draw();
+  } else if(type==='sakura'){
+    const petals = Array.from({length:20},()=>({x:Math.random(),y:Math.random(),r:Math.random()*5+3,sp:Math.random()+.3,rot:Math.random()*360,rsp:Math.random()*2-1}));
+    function draw(){
+      ctx.clearRect(0,0,canvas.width,canvas.height);
+      ctx.fillStyle='rgba(253,232,243,0.1)';ctx.fillRect(0,0,canvas.width,canvas.height);
+      petals.forEach(p=>{
+        ctx.save();ctx.translate(p.x*canvas.width,p.y*canvas.height);ctx.rotate(p.rot*Math.PI/180);
+        ctx.beginPath();ctx.ellipse(0,0,p.r,p.r*.6,0,0,Math.PI*2);
+        ctx.fillStyle='rgba(249,168,212,0.85)';ctx.fill();ctx.restore();
+        p.y+=p.sp/canvas.height*2;p.rot+=p.rsp;
+        if(p.y>1.05){p.y=-0.05;p.x=Math.random();}
+      });
+      requestAnimationFrame(draw);
+    } draw();
+  }
+}
+
+initMiniAnim('starsPreview','stars');
+initMiniAnim('neonPreview','neon');
+initMiniAnim('sakuraPreview','sakura');
+</script>
+</body>
+</html>
