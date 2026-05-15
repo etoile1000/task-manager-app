@@ -23,6 +23,12 @@ const DEFAULT_CATS = ["仕事", "etoile", "個人"];
 
 type EffectId = "none" | "ko" | "combo" | "sakura";
 
+function normalizeEffect(raw: string | null | undefined): EffectId {
+  const v = String(raw ?? "ko").trim().toLowerCase();
+  if (v === "none" || v === "ko" || v === "combo" || v === "sakura") return v;
+  return "ko";
+}
+
 type Props = {
   userId: string;
   userEmail: string;
@@ -74,8 +80,8 @@ export default function TaskDashboard({
     (initialProfile.theme as ThemeId) || "minimal",
   );
   const [bg, setBg] = useState(initialProfile.bg || "none");
-  const [effect, setEffect] = useState<EffectId>(
-    (initialProfile.effect as EffectId) || "ko",
+  const [effect, setEffect] = useState<EffectId>(() =>
+    normalizeEffect(initialProfile.effect),
   );
   const [categories, setCategories] = useState<string[]>(() => {
     const n = normalizeCategories(initialProfile.categories);
@@ -141,13 +147,14 @@ export default function TaskDashboard({
   }, [theme, bg, effect, persistProfile]);
 
   const playEffect = useCallback(
-    (preview = false) => {
-      if (!preview && effect === "none") return;
+    (preview = false, effectOverride?: EffectId) => {
+      const id = effectOverride ?? effect;
+      if (!preview && id === "none") return;
       const overlay = effectOverlayRef.current;
       if (!overlay) return;
       overlay.innerHTML = "";
 
-      if (effect === "ko") {
+      if (id === "ko") {
         const el = document.createElement("div");
         el.className = "effect-ko";
         el.textContent = "K.O!";
@@ -155,22 +162,23 @@ export default function TaskDashboard({
         setTimeout(() => {
           overlay.innerHTML = "";
         }, 1300);
-      } else if (effect === "combo") {
-        comboCountRef.current += 1;
-        if (comboTimerRef.current) clearTimeout(comboTimerRef.current);
-        comboTimerRef.current = setTimeout(() => {
-          comboCountRef.current = 0;
-        }, 3000);
-        if (comboCountRef.current < 2 && !preview) return;
-        overlay.innerHTML = "";
+      } else if (id === "combo") {
+        if (!preview) {
+          comboCountRef.current += 1;
+          if (comboTimerRef.current) clearTimeout(comboTimerRef.current);
+          comboTimerRef.current = setTimeout(() => {
+            comboCountRef.current = 0;
+          }, 3000);
+        }
+        const n = preview ? 1 : comboCountRef.current;
         const el = document.createElement("div");
         el.className = "effect-combo";
-        el.innerHTML = `<div class="effect-combo-num">${comboCountRef.current}</div><div class="effect-combo-label">COMBO!</div>`;
+        el.innerHTML = `<div class="effect-combo-num">${n}</div><div class="effect-combo-label">COMBO!</div>`;
         overlay.appendChild(el);
         setTimeout(() => {
           overlay.innerHTML = "";
         }, 1500);
-      } else if (effect === "sakura") {
+      } else if (id === "sakura") {
         const colors = ["#f9a8d4", "#fda4af", "#c4b5fd", "#fbcfe8", "#fecdd3"];
         for (let i = 0; i < 30; i++) {
           setTimeout(() => {
@@ -902,7 +910,7 @@ export default function TaskDashboard({
                   className={`effect-opt-btn${effect === o.id ? " active" : ""}`}
                   onClick={() => {
                     setEffect(o.id);
-                    playEffect(true);
+                    playEffect(true, o.id);
                   }}
                 >
                   <span className="text-lg">{o.icon}</span>
