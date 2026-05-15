@@ -3,8 +3,9 @@ import { ServiceWorkerUnregister } from "@/components/service-worker-unregister"
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "タスク管理",
-  description: "優先度 × 期限でスコアリング自動ソート",
+  title: "Doova",
+  description: "Do something. Reach nova.",
+  manifest: "/manifest.json",
 };
 
 export default function RootLayout({
