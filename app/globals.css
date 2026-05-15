@@ -327,55 +327,35 @@ input[type="date"]::-webkit-calendar-picker-indicator { opacity: 0.6; cursor: po
   .bg-grid{grid-template-columns:repeat(3,1fr)}
 }
 @media print {
+  /* 背景アニメーション・写真レイヤーと完了エフェクトのみ非表示（テーマ色は維持） */
   #bg-layer,
+  #bg-canvas,
+  #bg-image,
   #effect-overlay {
     display: none !important;
   }
 
   html {
-    background: #fff !important;
-    color-scheme: only light;
+    background: transparent !important;
   }
 
   body {
     position: static !important;
     min-height: 0 !important;
     padding: 0.5cm !important;
-    background: #fff !important;
-    color: #000 !important;
+    background: var(--bg) !important;
+    color: var(--text) !important;
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
   }
 
-  /* テーマ・背景用変数を印刷時は常に白地・黒系に固定 */
-  :root,
-  [data-theme=""],
-  [data-theme="cyber"],
-  [data-theme="pastel"] {
-    --bg: #ffffff !important;
-    --bg-secondary: #f5f5f5 !important;
-    --bg-tertiary: #eeeeee !important;
-    --text: #000000 !important;
-    --text-secondary: #333333 !important;
-    --text-tertiary: #555555 !important;
-    --border: rgba(0, 0, 0, 0.2) !important;
-    --border-secondary: rgba(0, 0, 0, 0.35) !important;
-    --accent: #000000 !important;
-    --accent-text: #ffffff !important;
-    --card-bg: #ffffff !important;
-    --card-border: rgba(0, 0, 0, 0.25) !important;
-    --card-shadow: none !important;
-  }
-
+  /* ぼかしは印刷で周囲と噛み合わないため除去（色はテーマのまま） */
   *,
   *::before,
   *::after {
-    box-shadow: none !important;
-    text-shadow: none !important;
     backdrop-filter: none !important;
   }
 
-  #bg-layer,
   .container .header,
   .form-panel,
   .stats,
@@ -393,8 +373,8 @@ input[type="date"]::-webkit-calendar-picker-indicator { opacity: 0.6; cursor: po
 
   .modal,
   .share-modal {
-    background: #fff !important;
-    color: #000 !important;
+    background: var(--bg) !important;
+    color: var(--text) !important;
     border: none !important;
     box-shadow: none !important;
     padding: 0 !important;
@@ -412,50 +392,56 @@ input[type="date"]::-webkit-calendar-picker-indicator { opacity: 0.6; cursor: po
   .print-preview {
     border: none !important;
     padding: 0 !important;
-    background: #fff !important;
-    color: #000 !important;
+    margin-top: 0 !important;
+    background: var(--card-bg) !important;
+    color: var(--text) !important;
+    border-radius: 0 !important;
   }
 
-  .print-preview .print-title,
-  .print-preview .print-cat-title {
-    color: #000 !important;
+  .print-preview .print-header {
+    border-bottom-color: var(--border-secondary) !important;
+  }
+
+  .print-preview .print-title {
+    color: var(--text) !important;
   }
 
   .print-preview .print-meta {
-    color: #333 !important;
+    color: var(--text-secondary) !important;
+  }
+
+  .print-preview .print-cat-title {
+    color: var(--text) !important;
+    border-bottom-color: var(--border) !important;
   }
 
   .print-preview .print-table th {
-    color: #333 !important;
-    border-bottom-color: #ccc !important;
+    color: var(--text-secondary) !important;
+    border-bottom-color: var(--border) !important;
   }
 
   .print-preview .print-table td {
-    color: #000 !important;
-    border-bottom-color: #ddd !important;
+    color: var(--text) !important;
+    border-bottom-color: var(--border) !important;
   }
 
   .print-preview .print-preview-empty {
-    color: #333 !important;
+    color: var(--text-secondary) !important;
   }
 
   .print-preview .print-td-done {
     text-decoration: line-through !important;
-    color: #333 !important;
+    color: var(--text-secondary) !important;
   }
 
   .print-preview .print-td-note {
-    color: #333 !important;
+    color: var(--text-secondary) !important;
   }
 
-  .print-preview .p-badge {
-    background: #fff !important;
-    color: #000 !important;
-    border: 1px solid #000 !important;
+  /* 暗色テーマでは期限超過の強調色を明るめにしてコントラストを確保 */
+  [data-theme="cyber"] .print-preview .p-overdue {
+    color: #fca5a5 !important;
   }
 
-  .print-preview .p-overdue {
-    color: #000 !important;
-    font-weight: 700 !important;
-  }
+  /* 優先度バッジは .p-* の配色をそのまま利用 */
 }
