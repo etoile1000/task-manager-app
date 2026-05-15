@@ -399,7 +399,7 @@ export default function TaskDashboard({
 
     let html = `<div class="print-header"><div class="print-title">現在の担当タスク一覧</div><div class="print-meta">${ds} 時点　${shareScope === "active" ? "未完了タスクのみ" : "全タスク"}　カテゴリ：${esc(shareCats.join("・") || "なし")}</div></div>`;
     if (!pool.length)
-      html += `<div style="text-align:center;padding:1.5rem;color:#888;font-size:13px;">対象タスクなし</div>`;
+      html += `<div class="print-preview-empty" style="text-align:center;padding:1.5rem;font-size:13px;">対象タスクなし</div>`;
     else {
       cats.forEach((cat) => {
         const ct = pool.filter((t) => t.cat === cat);
@@ -408,7 +408,7 @@ export default function TaskDashboard({
           .map((t) => {
             const isOv =
               !t.done && t.due && (daysUntil(t.due) ?? 0) < 0;
-            return `<tr><td style="${t.done ? "text-decoration:line-through;color:#999" : ""}">${esc(t.name)}</td><td>${pb(t.priority)}</td><td class="${isOv ? "p-overdue" : ""}">${esc(dueLabelPrint(t.due))}</td><td>${t.done ? "✓ 完了" : "進行中"}</td><td style="color:#666">${esc(t.note || "")}</td></tr>`;
+            return `<tr><td class="${t.done ? "print-td-done" : ""}">${esc(t.name)}</td><td>${pb(t.priority)}</td><td class="${isOv ? "p-overdue" : ""}">${esc(dueLabelPrint(t.due))}</td><td>${t.done ? "✓ 完了" : "進行中"}</td><td class="print-td-note">${esc(t.note || "")}</td></tr>`;
           })
           .join("");
         html += `</tbody></table></div>`;

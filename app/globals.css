@@ -327,10 +327,135 @@ input[type="date"]::-webkit-calendar-picker-indicator { opacity: 0.6; cursor: po
   .bg-grid{grid-template-columns:repeat(3,1fr)}
 }
 @media print {
-  body{padding:.5cm}
-  #bg-layer,.container .header,.form-panel,.stats,.filters,#listEl{display:none!important}
-  .modal-overlay{display:block!important;position:static;background:none;padding:0}
-  .share-modal{border:none;padding:0;max-height:none;overflow:visible}
-  .modal-header,.share-row,.share-scope-btns,.modal-actions{display:none!important}
-  .print-preview{border:none;padding:0}
+  #bg-layer,
+  #effect-overlay {
+    display: none !important;
+  }
+
+  html {
+    background: #fff !important;
+    color-scheme: only light;
+  }
+
+  body {
+    position: static !important;
+    min-height: 0 !important;
+    padding: 0.5cm !important;
+    background: #fff !important;
+    color: #000 !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  /* テーマ・背景用変数を印刷時は常に白地・黒系に固定 */
+  :root,
+  [data-theme=""],
+  [data-theme="cyber"],
+  [data-theme="pastel"] {
+    --bg: #ffffff !important;
+    --bg-secondary: #f5f5f5 !important;
+    --bg-tertiary: #eeeeee !important;
+    --text: #000000 !important;
+    --text-secondary: #333333 !important;
+    --text-tertiary: #555555 !important;
+    --border: rgba(0, 0, 0, 0.2) !important;
+    --border-secondary: rgba(0, 0, 0, 0.35) !important;
+    --accent: #000000 !important;
+    --accent-text: #ffffff !important;
+    --card-bg: #ffffff !important;
+    --card-border: rgba(0, 0, 0, 0.25) !important;
+    --card-shadow: none !important;
+  }
+
+  *,
+  *::before,
+  *::after {
+    box-shadow: none !important;
+    text-shadow: none !important;
+    backdrop-filter: none !important;
+  }
+
+  #bg-layer,
+  .container .header,
+  .form-panel,
+  .stats,
+  .filters,
+  #listEl {
+    display: none !important;
+  }
+
+  .modal-overlay {
+    display: block !important;
+    position: static !important;
+    background: none !important;
+    padding: 0 !important;
+  }
+
+  .modal,
+  .share-modal {
+    background: #fff !important;
+    color: #000 !important;
+    border: none !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+    max-height: none !important;
+    overflow: visible !important;
+  }
+
+  .modal-header,
+  .share-row,
+  .share-scope-btns,
+  .modal-actions {
+    display: none !important;
+  }
+
+  .print-preview {
+    border: none !important;
+    padding: 0 !important;
+    background: #fff !important;
+    color: #000 !important;
+  }
+
+  .print-preview .print-title,
+  .print-preview .print-cat-title {
+    color: #000 !important;
+  }
+
+  .print-preview .print-meta {
+    color: #333 !important;
+  }
+
+  .print-preview .print-table th {
+    color: #333 !important;
+    border-bottom-color: #ccc !important;
+  }
+
+  .print-preview .print-table td {
+    color: #000 !important;
+    border-bottom-color: #ddd !important;
+  }
+
+  .print-preview .print-preview-empty {
+    color: #333 !important;
+  }
+
+  .print-preview .print-td-done {
+    text-decoration: line-through !important;
+    color: #333 !important;
+  }
+
+  .print-preview .print-td-note {
+    color: #333 !important;
+  }
+
+  .print-preview .p-badge {
+    background: #fff !important;
+    color: #000 !important;
+    border: 1px solid #000 !important;
+  }
+
+  .print-preview .p-overdue {
+    color: #000 !important;
+    font-weight: 700 !important;
+  }
 }
