@@ -338,6 +338,15 @@
   z-index: 1;
 }
 
+.browserNote {
+  margin-top: 1rem;
+  text-align: center;
+  font-size: 10px;
+  line-height: 1.55;
+  color: rgba(232, 224, 255, 0.25);
+  letter-spacing: 0.04em;
+}
+
 .footer {
   margin-top: 2rem;
   text-align: center;

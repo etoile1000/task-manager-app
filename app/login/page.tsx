@@ -176,6 +176,10 @@ export default function LoginPage() {
             </span>
           </button>
 
+          <p className={styles.browserNote}>
+            ※ LINEやInstagramなどのアプリ内ブラウザからはログインできません。SafariまたはChromeで開いてください。
+          </p>
+
           <div className={styles.footer}>
             ログインすることで<a href="#">利用規約</a>および<a href="#">プライバシーポリシー</a>
             に同意したことになります
