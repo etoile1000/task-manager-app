@@ -66,6 +66,49 @@ function printBadgeClass(p: Priority) {
   )[p] ?? "p-mid";
 }
 
+const SAKURA_PREVIEW_PETALS = [
+  { left: "12%", top: "8%", w: 9, h: 5, rot: -25, color: "#f9a8d4" },
+  { left: "55%", top: "18%", w: 7, h: 4, rot: 40, color: "#fda4af" },
+  { left: "72%", top: "42%", w: 8, h: 5, rot: -15, color: "#fbcfe8" },
+  { left: "28%", top: "52%", w: 10, h: 6, rot: 55, color: "#f9a8d4" },
+  { left: "48%", top: "68%", w: 6, h: 4, rot: 10, color: "#c4b5fd" },
+  { left: "8%", top: "62%", w: 7, h: 4, rot: -40, color: "#fecdd3" },
+] as const;
+
+function EffectOptionPreview({ id }: { id: EffectId }) {
+  if (id === "none") return null;
+
+  return (
+    <div className="effect-opt-preview" aria-hidden>
+      {id === "ko" && <span className="effect-preview-ko">K.O!</span>}
+      {id === "combo" && (
+        <div className="effect-preview-combo">
+          <span className="effect-preview-combo-num">2</span>
+          <span className="effect-preview-combo-label">COMBO!</span>
+        </div>
+      )}
+      {id === "sakura" && (
+        <div className="effect-preview-sakura">
+          {SAKURA_PREVIEW_PETALS.map((p, i) => (
+            <span
+              key={i}
+              className="effect-preview-petal"
+              style={{
+                left: p.left,
+                top: p.top,
+                width: p.w,
+                height: p.h,
+                transform: `rotate(${p.rot}deg)`,
+                background: p.color,
+              }}
+            />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function TaskDashboard({
   userId,
   userEmail,
@@ -921,11 +964,14 @@ export default function TaskDashboard({
                     playEffect(true, o.id);
                   }}
                 >
-                  <span className="text-lg">{o.icon}</span>
-                  <div>
-                    <div className="text-sm font-medium">{o.t}</div>
-                    <div className="text-xs text-[var(--text-secondary)]">{o.d}</div>
+                  <div className="effect-opt-main">
+                    <span className="text-lg">{o.icon}</span>
+                    <div>
+                      <div className="text-sm font-medium">{o.t}</div>
+                      <div className="text-xs text-[var(--text-secondary)]">{o.d}</div>
+                    </div>
                   </div>
+                  <EffectOptionPreview id={o.id} />
                 </button>
               ))}
             </div>

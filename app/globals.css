@@ -222,6 +222,48 @@ input[type="date"]::-webkit-calendar-picker-indicator { opacity: 0.6; cursor: po
   color: var(--text); cursor: pointer; font-family: var(--font);
   text-align: left; transition: all 0.15s; width: 100%;
 }
+.effect-opt-main {
+  flex: 1; min-width: 0;
+  display: flex; align-items: center; gap: 12px;
+}
+.effect-opt-preview {
+  flex-shrink: 0;
+  width: 80px; height: 50px;
+  border-radius: 6px;
+  border: 0.5px solid var(--border);
+  background: var(--bg);
+  display: flex; align-items: center; justify-content: center;
+  overflow: hidden; position: relative;
+}
+.effect-preview-ko {
+  font-family: 'Impact', 'Arial Black', sans-serif;
+  font-size: 18px; font-weight: 900; letter-spacing: -1px;
+  color: #e24b4a;
+  text-shadow: 1px 1px 0 #1a1a18, -1px -1px 0 #1a1a18;
+  line-height: 1;
+}
+.effect-preview-combo { text-align: center; line-height: 1; }
+.effect-preview-combo-num {
+  display: block;
+  font-family: 'Impact', 'Arial Black', sans-serif;
+  font-size: 22px; font-weight: 900;
+  color: #f59e0b;
+  text-shadow: 1px 1px 0 #92400e;
+}
+.effect-preview-combo-label {
+  display: block;
+  font-family: 'Impact', 'Arial Black', sans-serif;
+  font-size: 8px; font-weight: 900;
+  color: var(--text);
+  letter-spacing: 1.5px;
+  margin-top: 1px;
+}
+.effect-preview-sakura {
+  position: relative; width: 100%; height: 100%;
+}
+.effect-preview-petal {
+  position: absolute; border-radius: 50%;
+}
 .effect-opt-btn:hover { border-color: var(--border-secondary); }
 .effect-opt-btn.active { border-color: var(--accent); background: var(--bg); box-shadow: 0 0 0 1px var(--accent); }
 
