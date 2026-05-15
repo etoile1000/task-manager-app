@@ -7,6 +7,11 @@ export const metadata: Metadata = {
   title: "Doova",
   description: "Do something. Reach nova.",
   manifest: "/manifest.json",
+  icons: {
+    icon: "/favicon.ico",
+    apple: "/apple-touch-icon.png",
+    shortcut: "/favicon.ico",
+  },
 };
 
 export default function RootLayout({
