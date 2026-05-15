@@ -1,13 +1,71 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="220" height="56" viewBox="0 0 220 56" fill="none" role="img" aria-label="Doova">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 160" width="480" height="160" role="img">
+  <title>Doova</title>
+  <desc>Doova logo — gradient icon with wordmark</desc>
+
+  <defs>
+    <!-- アイコン用グラデーション -->
+    <linearGradient id="iconGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%"   stop-color="#f97316"/>
+      <stop offset="50%"  stop-color="#ec4899"/>
+      <stop offset="100%" stop-color="#8b5cf6"/>
+    </linearGradient>
+
+    <!-- "va" テキスト用グラデーション -->
+    <linearGradient id="textGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%"   stop-color="#f97316"/>
+      <stop offset="50%"  stop-color="#ec4899"/>
+      <stop offset="100%" stop-color="#8b5cf6"/>
+    </linearGradient>
+
+    <!-- アイコン角丸クリップ -->
+    <clipPath id="iconClip">
+      <rect x="0" y="0" width="96" height="96" rx="26" ry="26"/>
+    </clipPath>
+  </defs>
+
+  <!-- ======= アイコン (96×96, 左端32pxマージン) ======= -->
+  <g transform="translate(32, 32)">
+    <!-- 角丸正方形の塗り -->
+    <rect x="0" y="0" width="96" height="96" rx="26" ry="26" fill="url(#iconGrad)"/>
+
+    <!-- チェックマーク＋サークル（白） -->
+    <!-- 外円 -->
+    <circle cx="48" cy="48" r="30"
+            fill="none"
+            stroke="white"
+            stroke-width="5.5"
+            stroke-linecap="round"/>
+
+    <!-- チェック -->
+    <polyline points="33,48 44,59 64,37"
+              fill="none"
+              stroke="white"
+              stroke-width="5.5"
+              stroke-linecap="round"
+              stroke-linejoin="round"/>
+  </g>
+
+  <!-- ======= ワードマーク ======= -->
+  <!--
+    Outfitフォントはウェブフォントのため埋め込み参照。
+    SVG単体配布時はシステムフォールバック（sans-serif）になるが、
+    ブラウザ環境・スプラッシュ実装側でOutfitをロード済みであれば正しく描画される。
+    完全埋め込みが必要な場合はフォントをbase64でembedする。
+  -->
   <text
-    x="110"
-    y="38"
-    text-anchor="middle"
-    fill="#171717"
-    font-family="ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
-    font-size="36"
-    font-weight="700"
-    letter-spacing="-0.04em"
-  >Doova</text>
-  <circle cx="198" cy="18" r="5" fill="#f97316"/>
+    x="156" y="115"
+    font-family="'Outfit', 'Inter', sans-serif"
+    font-size="80"
+    font-weight="500"
+    letter-spacing="-2"
+    fill="#0e0d0c">Doo</text>
+
+  <text
+    x="310" y="115"
+    font-family="'Outfit', 'Inter', sans-serif"
+    font-size="80"
+    font-weight="500"
+    letter-spacing="-2"
+    fill="url(#textGrad)">va</text>
+
 </svg>
