@@ -5,7 +5,7 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: "Doova",
-  description: "Do something. Reach nova.",
+  description: "「やること」が、星になる。優先度×期限で自動ソートするタスク管理アプリ。",
   manifest: "/manifest.json",
   icons: {
     icon: [{ url: "/favicon.ico", sizes: "any", type: "image/x-icon" }],
@@ -16,6 +16,30 @@ export const metadata: Metadata = {
         type: "image/png",
       },
     ],
+  },
+  openGraph: {
+    title: "Doova — Do something. Reach nova.",
+    description:
+      "「やること」が、星になる。優先度×期限で自動ソート、背景・テーマを自分好みにカスタマイズできるタスク管理アプリ。",
+    url: "https://tasks.etoilellc.com",
+    siteName: "Doova",
+    images: [
+      {
+        url: "https://tasks.etoilellc.com/ogp.png",
+        width: 1200,
+        height: 630,
+        alt: "Doova — Do something. Reach nova.",
+      },
+    ],
+    locale: "ja_JP",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Doova — Do something. Reach nova.",
+    description:
+      "「やること」が、星になる。優先度×期限で自動ソート、背景・テーマを自分好みにカスタマイズできるタスク管理アプリ。",
+    images: ["https://tasks.etoilellc.com/ogp.png"],
   },
 };
 
