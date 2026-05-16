@@ -21,5 +21,7 @@ export type ProfileRow = {
   bg: string;
   effect: string;
   categories: unknown;
+  /** Set true via Stripe webhook after paid checkout */
+  is_pro: boolean;
   created_at: string;
 };

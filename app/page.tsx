@@ -26,6 +26,7 @@ export default async function HomePage() {
       bg: "none",
       effect: "ko",
       categories: DEFAULT_CATS,
+      is_pro: false,
     };
     await supabase.from("profiles").insert(row);
     profile = row as ProfileRow;
@@ -37,6 +38,11 @@ export default async function HomePage() {
     profile = { ...profile, categories: DEFAULT_CATS };
   }
 
+  const safeProfile: ProfileRow = {
+    ...(profile as ProfileRow),
+    is_pro: (profile as ProfileRow).is_pro === true,
+  };
+
   const { data: tasks } = await supabase
     .from("tasks")
     .select("*")
@@ -46,7 +52,7 @@ export default async function HomePage() {
     <TaskDashboard
       userId={user.id}
       userEmail={user.email ?? ""}
-      initialProfile={profile}
+      initialProfile={safeProfile}
       initialTasks={tasks ?? []}
     />
   );

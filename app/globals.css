@@ -323,6 +323,69 @@ input[type="date"]::-webkit-calendar-picker-indicator { opacity: 0.6; cursor: po
 /* Pro バッジ */
 .pro-badge { display: inline-flex; align-items: center; gap: 3px; padding: 2px 7px; border-radius: 100px; background: linear-gradient(135deg,#f59e0b,#ef4444); color: #fff; font-size: 10px; font-weight: 700; margin-left: 6px; }
 
+/* Pro アップグレード案内（テーマモーダル内） */
+.pro-upgrade-panel {
+  text-align: center;
+  padding: 1.25rem 1rem 1.5rem;
+  border-radius: var(--radius-lg);
+  border: 0.5px solid var(--border-secondary);
+  background: var(--bg-secondary);
+}
+.pro-upgrade-ribbon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 3px 12px;
+  border-radius: 100px;
+  background: linear-gradient(135deg, #f59e0b, #ef4444);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  margin-bottom: 1rem;
+}
+.pro-upgrade-title {
+  font-size: 17px;
+  font-weight: 600;
+  margin-bottom: 0.75rem;
+  color: var(--text);
+}
+.pro-upgrade-text {
+  font-size: 13px;
+  line-height: 1.65;
+  color: var(--text-secondary);
+  margin-bottom: 1.25rem;
+  text-align: left;
+}
+.pro-upgrade-hint {
+  font-size: 12px;
+  color: var(--text-tertiary);
+  line-height: 1.5;
+}
+.pro-upgrade-cta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 11px 22px;
+  border-radius: var(--radius-md);
+  border: 0.5px solid var(--border-secondary);
+  background: var(--card-bg);
+  color: var(--text);
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+  font-family: var(--font);
+  transition: all 0.15s;
+}
+.pro-upgrade-cta:hover {
+  border-color: var(--accent);
+  background: var(--bg);
+  box-shadow: 0 0 0 1px var(--accent);
+}
+[data-theme="cyber"] .pro-upgrade-cta:hover { box-shadow: 0 0 12px rgba(99, 102, 241, 0.25); }
+[data-theme="pastel"] .pro-upgrade-cta:hover { border-color: #f472b6; }
+
 /* 写真アップロード（点線は ::before で内側に描画し、角丸の欠けを防ぐ） */
 .upload-zone {
   position: relative;

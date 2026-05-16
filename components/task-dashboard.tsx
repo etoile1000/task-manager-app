@@ -109,6 +109,33 @@ function EffectOptionPreview({ id }: { id: EffectId }) {
   );
 }
 
+function ProUpgradePanel() {
+  const checkoutUrl = process.env.NEXT_PUBLIC_STRIPE_PRO_CHECKOUT_URL?.trim();
+
+  return (
+    <div className="pro-upgrade-panel">
+      <span className="pro-upgrade-ribbon">PRO</span>
+      <h3 className="pro-upgrade-title">Proプランへのアップグレード</h3>
+      <p className="pro-upgrade-text">
+        グラデーション・アニメーション背景、マイ写真、完了時のエフェクトなど、これらの Pro
+        限定機能をご利用いただけます。
+      </p>
+      {checkoutUrl ? (
+        <a
+          href={checkoutUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="pro-upgrade-cta"
+        >
+          <i className="ti ti-sparkles" /> アップグレードする
+        </a>
+      ) : (
+        <p className="pro-upgrade-hint">決済ページの準備ができ次第、ここからお申し込みいただけます。</p>
+      )}
+    </div>
+  );
+}
+
 export default function TaskDashboard({
   userId,
   userEmail,
@@ -117,14 +144,17 @@ export default function TaskDashboard({
 }: Props) {
   const router = useRouter();
   const supabase = useMemo(() => createClient(), []);
+  const isPro = initialProfile.is_pro === true;
 
   const [tasks, setTasks] = useState<TaskRow[]>(initialTasks);
   const [theme, setTheme] = useState<ThemeId>(
     (initialProfile.theme as ThemeId) || "minimal",
   );
-  const [bg, setBg] = useState(initialProfile.bg || "none");
+  const [bg, setBg] = useState(() =>
+    isPro ? initialProfile.bg || "none" : "none",
+  );
   const [effect, setEffect] = useState<EffectId>(() =>
-    normalizeEffect(initialProfile.effect),
+    isPro ? normalizeEffect(initialProfile.effect) : "none",
   );
   const [categories, setCategories] = useState<string[]>(() => {
     const n = normalizeCategories(initialProfile.categories);
@@ -159,13 +189,17 @@ export default function TaskDashboard({
   const comboTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
+    if (!isPro) {
+      setPhotoSrc(null);
+      return;
+    }
     try {
       const p = localStorage.getItem(photoKey);
       if (p) setPhotoSrc(p);
     } catch {
       /* ignore */
     }
-  }, [photoKey]);
+  }, [isPro, photoKey]);
 
   useEffect(() => {
     document.body.setAttribute(
@@ -186,11 +220,16 @@ export default function TaskDashboard({
   );
 
   useEffect(() => {
-    void persistProfile({ theme, bg, effect });
-  }, [theme, bg, effect, persistProfile]);
+    if (isPro) {
+      void persistProfile({ theme, bg, effect });
+    } else {
+      void persistProfile({ theme, bg: "none", effect: "none" });
+    }
+  }, [theme, bg, effect, isPro, persistProfile]);
 
   const playEffect = useCallback(
     (preview = false, effectOverride?: EffectId) => {
+      if (!isPro && !preview) return;
       const id = effectOverride ?? effect;
       if (!preview && id === "none") return;
       const overlay = effectOverlayRef.current;
@@ -239,7 +278,7 @@ export default function TaskDashboard({
         }
       }
     },
-    [effect],
+    [effect, isPro],
   );
 
   const activeTasks = useMemo(() => {
@@ -461,7 +500,7 @@ export default function TaskDashboard({
   }, [tasks, shareCats, shareScope]);
 
   const handlePhoto = (file: File | null) => {
-    if (!file) return;
+    if (!isPro || !file) return;
     const reader = new FileReader();
     reader.onload = () => {
       const src = String(reader.result || "");
@@ -478,7 +517,10 @@ export default function TaskDashboard({
 
   return (
     <>
-      <BgLayer currentBg={bg} photoSrc={photoSrc} />
+      <BgLayer
+        currentBg={isPro ? bg : "none"}
+        photoSrc={isPro && bg === "photo" ? photoSrc : null}
+      />
       <div id="effect-overlay" ref={effectOverlayRef} />
 
       <div className="container">
@@ -858,123 +900,136 @@ export default function TaskDashboard({
           </div>
 
           <div className={`tab-content${tab === "bg" ? " active" : ""}`}>
-            <div className="section-title">表示</div>
-            <div className="bg-grid">
-              <button
-                type="button"
-                className={`bg-card${bg === "none" ? " selected" : ""}`}
-                onClick={() => setBg("none")}
-              >
-                <div
-                  className="bg-preview"
-                  style={{ background: "var(--bg-tertiary)" }}
-                />
-                <div className="bg-label">デフォルト</div>
-                <div className="selected-check">✓</div>
-              </button>
-            </div>
-            <div className="section-title">グラデーション</div>
-            <div className="bg-grid">
-              {GRAD_BG_META.map((b) => (
-                <button
-                  key={b.id}
-                  type="button"
-                  className={`bg-card${bg === b.id ? " selected" : ""}`}
-                  onClick={() => setBg(b.id)}
-                >
-                  <div className="bg-preview" style={{ background: b.grad }} />
-                  <div className="bg-label">{b.label}</div>
-                  <div className="selected-check">✓</div>
-                </button>
-              ))}
-            </div>
-            <div className="section-title">アニメーション</div>
-            <div className="bg-grid">
-              {ANIM_BG_META.map((b) => (
-                <button
-                  key={b.id}
-                  type="button"
-                  className={`bg-card${bg === b.id ? " selected" : ""}`}
-                  onClick={() => setBg(b.id)}
-                >
-                  <div
-                    className="bg-preview"
-                    style={{ background: ANIM_PREVIEW[b.id] ?? "#eee" }}
-                  />
-                  <div className="bg-label">{b.label}</div>
-                  <div className="selected-check">✓</div>
-                </button>
-              ))}
-            </div>
-            <div className="section-title">マイ写真</div>
-            <label className="upload-zone">
-              <i className="ti ti-photo-up" />
-              <p>クリックして写真を選択</p>
-              <input
-                type="file"
-                accept="image/*"
-                className="hidden"
-                onChange={(e) => handlePhoto(e.target.files?.[0] ?? null)}
-              />
-            </label>
-            {photoSrc ? (
-              <div className="mt-2">
+            {!isPro ? (
+              <ProUpgradePanel />
+            ) : (
+              <>
+                <div className="section-title">表示</div>
                 <div className="bg-grid">
                   <button
                     type="button"
-                    className={`bg-card${bg === "photo" ? " selected" : ""}`}
-                    onClick={() => setBg("photo")}
+                    className={`bg-card${bg === "none" ? " selected" : ""}`}
+                    onClick={() => setBg("none")}
                   >
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={photoSrc} alt="" className="h-full w-full object-cover" />
-                    <div className="bg-label">マイ写真</div>
+                    <div
+                      className="bg-preview"
+                      style={{ background: "var(--bg-tertiary)" }}
+                    />
+                    <div className="bg-label">デフォルト</div>
                     <div className="selected-check">✓</div>
                   </button>
                 </div>
-              </div>
-            ) : null}
-            <div
-              className="mt-3 rounded-[var(--radius-md)] p-3 text-xs text-[var(--text-secondary)]"
-              style={{ background: "var(--bg-secondary)" }}
-            >
-              <i className="ti ti-info-circle mr-1" />
-              背景はアカウントに紐づいて保存されます（写真はこのブラウザの localStorage にも保存されます）。
-            </div>
+                <div className="section-title">グラデーション</div>
+                <div className="bg-grid">
+                  {GRAD_BG_META.map((b) => (
+                    <button
+                      key={b.id}
+                      type="button"
+                      className={`bg-card${bg === b.id ? " selected" : ""}`}
+                      onClick={() => setBg(b.id)}
+                    >
+                      <div className="bg-preview" style={{ background: b.grad }} />
+                      <div className="bg-label">{b.label}</div>
+                      <div className="selected-check">✓</div>
+                    </button>
+                  ))}
+                </div>
+                <div className="section-title">アニメーション</div>
+                <div className="bg-grid">
+                  {ANIM_BG_META.map((b) => (
+                    <button
+                      key={b.id}
+                      type="button"
+                      className={`bg-card${bg === b.id ? " selected" : ""}`}
+                      onClick={() => setBg(b.id)}
+                    >
+                      <div
+                        className="bg-preview"
+                        style={{ background: ANIM_PREVIEW[b.id] ?? "#eee" }}
+                      />
+                      <div className="bg-label">{b.label}</div>
+                      <div className="selected-check">✓</div>
+                    </button>
+                  ))}
+                </div>
+                <div className="section-title">マイ写真</div>
+                <label className="upload-zone">
+                  <i className="ti ti-photo-up" />
+                  <p>クリックして写真を選択</p>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={(e) => handlePhoto(e.target.files?.[0] ?? null)}
+                  />
+                </label>
+                {photoSrc ? (
+                  <div className="mt-2">
+                    <div className="bg-grid">
+                      <button
+                        type="button"
+                        className={`bg-card${bg === "photo" ? " selected" : ""}`}
+                        onClick={() => setBg("photo")}
+                      >
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img src={photoSrc} alt="" className="h-full w-full object-cover" />
+                        <div className="bg-label">マイ写真</div>
+                        <div className="selected-check">✓</div>
+                      </button>
+                    </div>
+                  </div>
+                ) : null}
+                <div
+                  className="mt-3 rounded-[var(--radius-md)] p-3 text-xs text-[var(--text-secondary)]"
+                  style={{ background: "var(--bg-secondary)" }}
+                >
+                  <i className="ti ti-info-circle mr-1" />
+                  背景はアカウントに紐づいて保存されます（写真はこのブラウザの localStorage
+                  にも保存されます）。
+                </div>
+              </>
+            )}
           </div>
 
           <div className={`tab-content${tab === "effect" ? " active" : ""}`}>
-            <p className="mb-4 text-[13px] leading-relaxed text-[var(--text-secondary)]">
-              タスク完了時に演出を表示します。
-            </p>
-            <div className="flex flex-col gap-2.5">
-              {(
-                [
-                  { id: "none" as const, icon: "🚫", t: "なし", d: "エフェクトなし" },
-                  { id: "ko" as const, icon: "👊", t: "K.O!", d: "格闘ゲーム風・完了した瞬間ドンと出る" },
-                  { id: "combo" as const, icon: "🔥", t: "コンボ！", d: "連続完了でカウントが上がる" },
-                  { id: "sakura" as const, icon: "🌸", t: "桜吹雪", d: "ふわっと花びらが舞う" },
-                ] as const
-              ).map((o) => (
-                <button
-                  key={o.id}
-                  type="button"
-                  className={`effect-opt-btn${effect === o.id ? " active" : ""}`}
-                  onClick={() => {
-                    setEffect(o.id);
-                    playEffect(true, o.id);
-                  }}
-                >
-                  <div className="effect-opt-main">
-                    <span className="text-lg">{o.icon}</span>
-                    <div>
-                      <div className="text-sm font-medium">{o.t}</div>
-                      <div className="text-xs text-[var(--text-secondary)]">{o.d}</div>
-                    </div>
-                  </div>
-                  <EffectOptionPreview id={o.id} />
-                </button>
-              ))}
-            </div>
+            {!isPro ? (
+              <ProUpgradePanel />
+            ) : (
+              <>
+                <p className="mb-4 text-[13px] leading-relaxed text-[var(--text-secondary)]">
+                  タスク完了時に演出を表示します。
+                </p>
+                <div className="flex flex-col gap-2.5">
+                  {(
+                    [
+                      { id: "none" as const, icon: "🚫", t: "なし", d: "エフェクトなし" },
+                      { id: "ko" as const, icon: "👊", t: "K.O!", d: "格闘ゲーム風・完了した瞬間ドンと出る" },
+                      { id: "combo" as const, icon: "🔥", t: "コンボ！", d: "連続完了でカウントが上がる" },
+                      { id: "sakura" as const, icon: "🌸", t: "桜吹雪", d: "ふわっと花びらが舞う" },
+                    ] as const
+                  ).map((o) => (
+                    <button
+                      key={o.id}
+                      type="button"
+                      className={`effect-opt-btn${effect === o.id ? " active" : ""}`}
+                      onClick={() => {
+                        setEffect(o.id);
+                        playEffect(true, o.id);
+                      }}
+                    >
+                      <div className="effect-opt-main">
+                        <span className="text-lg">{o.icon}</span>
+                        <div>
+                          <div className="text-sm font-medium">{o.t}</div>
+                          <div className="text-xs text-[var(--text-secondary)]">{o.d}</div>
+                        </div>
+                      </div>
+                      <EffectOptionPreview id={o.id} />
+                    </button>
+                  ))}
+                </div>
+              </>
+            )}
           </div>
         </div>
       </div>
