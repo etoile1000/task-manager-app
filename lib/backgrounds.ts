@@ -7,6 +7,7 @@ export type BackgroundId =
   | "stars"
   | "neon_rain"
   | "sakura"
+  | "bubble"
   | "thunder"
   | "matrix"
   | "aurora"
@@ -236,7 +237,84 @@ const sakura: DoovaBackground = {
 };
 
 /* ============================================================
-   4. 雷・稲妻 (NEW)
+   4. シャボン玉
+   - 半透明の円が下から上に浮かび上がる
+   - 虹色っぽい薄いグラデーションのボーダー
+============================================================ */
+const bubble: DoovaBackground = {
+  id: "bubble", name: "シャボン玉", emoji: "🫧", isPro: true, isNew: false, isAnimated: true,
+  render(canvas, options) {
+    resize(canvas);
+    const ctx = canvas.getContext("2d")!;
+    type Bubble = {
+      x: number; y: number; r: number; vy: number; wob: number; ws: number; amp: number; op: number;
+    };
+
+    const spawn = (fromBottom = false): Bubble => ({
+      x: Math.random() * canvas.width,
+      y: fromBottom
+        ? canvas.height + Math.random() * 80 + 20
+        : Math.random() * canvas.height,
+      r: previewSize(Math.random() * 16 + 8, options),
+      vy: previewSpeed(Math.random() * 0.75 + 0.35, options),
+      wob: Math.random() * Math.PI * 2,
+      ws: previewSpeed(Math.random() * 0.025 + 0.01, options),
+      amp: previewSize(Math.random() * 1.5 + 0.6, options),
+      op: Math.random() * 0.25 + 0.25,
+    });
+
+    const bubbles = Array.from(
+      { length: previewCount(36, options) },
+      () => spawn(false),
+    );
+    let raf: number;
+
+    function draw() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.fillStyle = "rgba(224,242,254,0.12)";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      bubbles.forEach((b, index) => {
+        b.wob += b.ws;
+        b.x += Math.sin(b.wob) * b.amp;
+        b.y -= b.vy;
+
+        const grad = ctx.createLinearGradient(b.x - b.r, b.y - b.r, b.x + b.r, b.y + b.r);
+        grad.addColorStop(0, "rgba(255,255,255,0.75)");
+        grad.addColorStop(0.35, "rgba(56,189,248,0.55)");
+        grad.addColorStop(0.7, "rgba(236,72,153,0.45)");
+        grad.addColorStop(1, "rgba(249,115,22,0.35)");
+
+        ctx.save();
+        ctx.globalAlpha = b.op;
+        ctx.beginPath();
+        ctx.arc(b.x, b.y, b.r, 0, Math.PI * 2);
+        ctx.fillStyle = "rgba(255,255,255,0.06)";
+        ctx.fill();
+        ctx.lineWidth = previewSize(1.3, options);
+        ctx.strokeStyle = grad;
+        ctx.stroke();
+
+        // small highlight
+        ctx.beginPath();
+        ctx.arc(b.x - b.r * 0.35, b.y - b.r * 0.35, b.r * 0.18, 0, Math.PI * 2);
+        ctx.fillStyle = "rgba(255,255,255,0.5)";
+        ctx.fill();
+        ctx.restore();
+
+        if (b.y + b.r < -20) bubbles[index] = spawn(true);
+      });
+
+      raf = requestAnimationFrame(draw);
+    }
+
+    draw();
+    return { stop: () => cancelAnimationFrame(raf) };
+  },
+};
+
+/* ============================================================
+   5. 雷・稲妻 (NEW)
    - ランダムな稲妻とフラッシュ
    - 枝分かれロジック付き
 ============================================================ */
@@ -335,7 +413,7 @@ const thunder: DoovaBackground = {
 };
 
 /* ============================================================
-   5. マトリックス (NEW)
+   6. マトリックス (NEW)
    - カタカナ＋英数字の縦スクロール
    - ヘッド（明）＋トレイル（暗）
 ============================================================ */
@@ -391,7 +469,7 @@ const matrix: DoovaBackground = {
 };
 
 /* ============================================================
-   6. オーロラ (NEW)
+   7. オーロラ (NEW)
    - sin波の帯を4層重ねてゆらゆら
    - blur フィルターで発光感
 ============================================================ */
@@ -461,7 +539,7 @@ const aurora: DoovaBackground = {
 };
 
 /* ============================================================
-   7. 砂嵐 (NEW)
+   8. 砂嵐 (NEW)
    - 発光する砂粒パーティクルが横風に流れる
    - ブランドカラーのダスト
 ============================================================ */
@@ -530,7 +608,7 @@ const sand: DoovaBackground = {
 };
 
 /* ============================================================
-   8. 流星群 (NEW)
+   9. 流星群 (NEW)
    - 定期的に流星をスポーン
    - 尾の長さ・色・速度をランダム化
    - 星雲エフェクト付き
@@ -641,7 +719,7 @@ const meteor: DoovaBackground = {
    エクスポート
 ============================================================ */
 export const BACKGROUNDS: Record<BackgroundId, DoovaBackground> = {
-  stars, neon_rain, sakura, thunder, matrix, aurora, sand, meteor,
+  stars, neon_rain, sakura, bubble, thunder, matrix, aurora, sand, meteor,
 };
 
 export const BACKGROUND_LIST = Object.values(BACKGROUNDS);

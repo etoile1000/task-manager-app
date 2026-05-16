@@ -11,7 +11,7 @@
 //   triggerEffect("confetti");    // コンフェッティ
 // ============================================================
 
-export type EffectId = "none" | "ko" | "sakura" | "beam" | "confetti";
+export type EffectId = "none" | "ko" | "pen" | "beam" | "confetti";
 
 /* ============================================================
    内部：Canvas + Overlay の生成・破棄
@@ -259,34 +259,7 @@ function effectBeam() {
 }
 
 /* ============================================================
-   4. 桜吹雪 — 既存エフェクト互換
-============================================================ */
-function effectSakura() {
-  ensureStyles();
-  clearEffect();
-  const overlay = getOverlay();
-  const colors = ["#f9a8d4", "#fda4af", "#c4b5fd", "#fbcfe8", "#fecdd3"];
-
-  for (let i = 0; i < 36; i++) {
-    scheduleTimeout(() => {
-      const petal = document.createElement("div");
-      petal.style.cssText = `
-        position:absolute;top:-24px;left:${Math.random() * 100}vw;
-        width:${Math.random() * 8 + 6}px;height:${Math.random() * 5 + 4}px;
-        border-radius:50%;background:${colors[Math.floor(Math.random() * colors.length)]};
-        --dx:${Math.random() * 80 - 40}px;
-        animation:dv-sakuraFall ${Math.random() * 1.8 + 2.2}s linear forwards;
-      `;
-      overlay.appendChild(petal);
-      scheduleTimeout(() => petal.remove(), 4300);
-    }, i * 55);
-  }
-
-  scheduleTimeout(clearEffect, 4800);
-}
-
-/* ============================================================
-   5. 花火 — 多発打ち上げ、重力演算付きパーティクル
+   4. 花火 — 多発打ち上げ、重力演算付きパーティクル
 ============================================================ */
 function effectFirework() {
   clearEffect();
@@ -449,7 +422,7 @@ function effectConfetti() {
 export const EFFECTS: Record<EffectId, () => void> = {
   none:      clearEffect,
   ko:        effectKO,
-  sakura:    effectSakura,
+  pen:       effectPen,
   beam:      effectBeam,
   confetti:  effectConfetti,
 };
@@ -465,7 +438,7 @@ export function triggerEffect(id: EffectId): void {
 export const EFFECT_META: { id: EffectId; name: string; emoji: string; desc: string }[] = [
   { id: "none",     name: "なし",       emoji: "🚫", desc: "エフェクトなし" },
   { id: "ko",       name: "K.O!",       emoji: "💥", desc: "衝撃波＋巨大文字が炸裂" },
-  { id: "sakura",   name: "桜吹雪",     emoji: "🌸", desc: "ふわっと花びらが舞う" },
+  { id: "pen",      name: "ペン線",     emoji: "✏️", desc: "スーッと線が引かれる達成感" },
   { id: "beam",     name: "ビーム",     emoji: "🔦", desc: "3色の光線が画面を横断" },
   { id: "confetti", name: "コンフェッティ", emoji: "🎊", desc: "物理演算で降り注ぐ紙吹雪" },
 ];

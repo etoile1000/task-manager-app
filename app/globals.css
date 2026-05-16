@@ -281,6 +281,12 @@ input[type="date"]::-webkit-calendar-picker-indicator { opacity: 0.6; cursor: po
   box-shadow: 0 0 14px rgba(249,115,22,0.65);
   transform: rotate(-8deg);
 }
+.effect-preview-pen {
+  width: 60px; height: 6px; border-radius: 999px;
+  background: linear-gradient(90deg, #f97316, #fb923c);
+  box-shadow: 0 0 12px rgba(249,115,22,0.55);
+  transform: rotate(-6deg);
+}
 .effect-preview-none {
   font-family: var(--font);
   font-size: 13px;
@@ -304,8 +310,9 @@ input[type="date"]::-webkit-calendar-picker-indicator { opacity: 0.6; cursor: po
 }
 .effect-card:has(.effect-preview-none) .effect-opt-preview { background: linear-gradient(135deg,#111827,#4b5563); }
 .effect-card:has(.effect-preview-ko) .effect-opt-preview { background: linear-gradient(135deg,#f97316,#ec4899,#8b5cf6); }
-.effect-card:has(.effect-preview-sakura) .effect-opt-preview { background: linear-gradient(135deg,#fbcfe8,#f9a8d4,#f0abfc); }
+.effect-card:has(.effect-preview-pen) .effect-opt-preview { background: linear-gradient(135deg,#431407,#9a3412,#f97316); }
 .effect-card:has(.effect-preview-beam) .effect-opt-preview { background: linear-gradient(135deg,#0ea5e9,#6366f1,#8b5cf6); }
+.effect-card:has(.effect-preview-confetti) .effect-opt-preview { background: linear-gradient(135deg,#f97316,#ec4899,#8b5cf6,#fcd34d); }
 .effect-card .effect-card-label {
   position: absolute; bottom: 0; left: 0; right: 0;
   padding: 6px 8px; font-size: 10px; font-weight: 700; color: #fff;

@@ -104,27 +104,10 @@ function EffectOptionPreview({ id }: { id: EffectId }) {
     <div className="effect-opt-preview" aria-hidden>
       {id === "none" && <span className="effect-preview-none">OFF</span>}
       {id === "ko" && <span className="effect-preview-ko">K.O!</span>}
-      {id === "sakura" && (
-        <div className="effect-preview-sakura">
-          {SAKURA_PREVIEW_PETALS.map((p, i) => (
-            <span
-              key={i}
-              className="effect-preview-petal"
-              style={{
-                left: p.left,
-                top: p.top,
-                width: p.w,
-                height: p.h,
-                transform: `rotate(${p.rot}deg)`,
-                background: p.color,
-              }}
-            />
-          ))}
-        </div>
-      )}
+      {id === "pen" && <span className="effect-preview-pen" />}
       {id === "beam" && <span className="effect-preview-beam" />}
       {id === "confetti" && (
-        <div className="effect-preview-sakura">
+        <div className="effect-preview-confetti">
           {SAKURA_PREVIEW_PETALS.map((p, i) => (
             <span
               key={i}
