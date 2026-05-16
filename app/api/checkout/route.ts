@@ -8,60 +8,98 @@ function getStripe(): Stripe {
   return new Stripe(key);
 }
 
-export async function GET(req: NextRequest) {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+async function resolvePriceId(stripe: Stripe): Promise<string | null> {
+  const explicitPriceId = process.env.STRIPE_PRO_PRICE_ID?.trim();
+  if (explicitPriceId) return explicitPriceId;
 
-  if (!user) {
-    const loginUrl = req.nextUrl.clone();
-    loginUrl.pathname = "/login";
-    loginUrl.searchParams.set("next", "/api/checkout");
-    return NextResponse.redirect(loginUrl);
+  const paymentLinkUrl = process.env.NEXT_PUBLIC_STRIPE_PRO_CHECKOUT_URL?.trim();
+  if (!paymentLinkUrl) return null;
+
+  const links = await stripe.paymentLinks.list({ active: true, limit: 100 });
+  const link = links.data.find((item) => item.url === paymentLinkUrl);
+  if (!link) {
+    console.error("[checkout] Payment Link URL was not found in Stripe account", {
+      paymentLinkUrl,
+    });
+    return null;
   }
 
-  const priceId = process.env.STRIPE_PRO_PRICE_ID;
+  const lineItems = await stripe.paymentLinks.listLineItems(link.id, { limit: 1 });
+  const priceId = lineItems.data[0]?.price?.id;
   if (!priceId) {
-    console.error("[checkout] STRIPE_PRO_PRICE_ID is not set");
+    console.error("[checkout] Payment Link has no price line item", {
+      paymentLinkId: link.id,
+    });
+    return null;
+  }
+
+  return priceId;
+}
+
+export async function GET(req: NextRequest) {
+  try {
+    const supabase = await createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+      const loginUrl = req.nextUrl.clone();
+      loginUrl.pathname = "/login";
+      loginUrl.searchParams.set("next", "/api/checkout");
+      return NextResponse.redirect(loginUrl);
+    }
+
+    const stripe = getStripe();
+    const priceId = await resolvePriceId(stripe);
+    if (!priceId) {
+      console.error(
+        "[checkout] Missing STRIPE_PRO_PRICE_ID and could not resolve price from Payment Link",
+      );
+      return NextResponse.json(
+        { error: "Stripe checkout is not configured" },
+        { status: 500 },
+      );
+    }
+
+    const price = await stripe.prices.retrieve(priceId);
+    const mode = price.recurring ? "subscription" : "payment";
+    const metadata = {
+      supabase_user_id: user.id,
+    };
+
+    const origin = req.nextUrl.origin;
+    const params: Parameters<typeof stripe.checkout.sessions.create>[0] = {
+      mode,
+      line_items: [{ price: priceId, quantity: 1 }],
+      success_url: `${origin}/?checkout=success`,
+      cancel_url: `${origin}/?checkout=cancelled`,
+      client_reference_id: user.id,
+      customer_email: user.email ?? undefined,
+      metadata,
+    };
+
+    if (mode === "subscription") {
+      params.subscription_data = { metadata };
+    } else {
+      params.payment_intent_data = { metadata };
+    }
+
+    const session = await stripe.checkout.sessions.create(params);
+
+    if (!session.url) {
+      return NextResponse.json(
+        { error: "Stripe did not return a checkout URL" },
+        { status: 500 },
+      );
+    }
+
+    return NextResponse.redirect(session.url, 303);
+  } catch (err) {
+    console.error("[checkout] failed to create Checkout Session", err);
     return NextResponse.json(
-      { error: "Stripe checkout is not configured" },
+      { error: "Failed to create Stripe Checkout Session" },
       { status: 500 },
     );
   }
-
-  const stripe = getStripe();
-  const price = await stripe.prices.retrieve(priceId);
-  const mode = price.recurring ? "subscription" : "payment";
-  const metadata = {
-    supabase_user_id: user.id,
-  };
-
-  const origin = req.nextUrl.origin;
-  const params: Parameters<typeof stripe.checkout.sessions.create>[0] = {
-    mode,
-    line_items: [{ price: priceId, quantity: 1 }],
-    success_url: `${origin}/?checkout=success`,
-    cancel_url: `${origin}/?checkout=cancelled`,
-    client_reference_id: user.id,
-    customer_email: user.email ?? undefined,
-    metadata,
-  };
-
-  if (mode === "subscription") {
-    params.subscription_data = { metadata };
-  } else {
-    params.payment_intent_data = { metadata };
-  }
-
-  const session = await stripe.checkout.sessions.create(params);
-
-  if (!session.url) {
-    return NextResponse.json(
-      { error: "Stripe did not return a checkout URL" },
-      { status: 500 },
-    );
-  }
-
-  return NextResponse.redirect(session.url, 303);
 }
