@@ -30,18 +30,31 @@ export async function GET(req: NextRequest) {
     );
   }
 
+  const stripe = getStripe();
+  const price = await stripe.prices.retrieve(priceId);
+  const mode = price.recurring ? "subscription" : "payment";
+  const metadata = {
+    supabase_user_id: user.id,
+  };
+
   const origin = req.nextUrl.origin;
-  const session = await getStripe().checkout.sessions.create({
-    mode: "payment",
+  const params: Parameters<typeof stripe.checkout.sessions.create>[0] = {
+    mode,
     line_items: [{ price: priceId, quantity: 1 }],
     success_url: `${origin}/?checkout=success`,
     cancel_url: `${origin}/?checkout=cancelled`,
     client_reference_id: user.id,
     customer_email: user.email ?? undefined,
-    metadata: {
-      supabase_user_id: user.id,
-    },
-  });
+    metadata,
+  };
+
+  if (mode === "subscription") {
+    params.subscription_data = { metadata };
+  } else {
+    params.payment_intent_data = { metadata };
+  }
+
+  const session = await stripe.checkout.sessions.create(params);
 
   if (!session.url) {
     return NextResponse.json(
