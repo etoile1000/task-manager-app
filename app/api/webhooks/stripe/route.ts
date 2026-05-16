@@ -14,7 +14,18 @@ async function setPro(userId: string) {
     .from("profiles")
     .update({ is_pro: true })
     .eq("id", userId);
-  if (error) console.error("[stripe webhook] profiles.is_pro update failed", error);
+  if (error) console.error("[stripe webhook] setPro failed", error);
+  else console.log("[stripe webhook] setPro success", { userId });
+}
+
+async function unsetPro(userId: string) {
+  const supabase = createAdminClient();
+  const { error } = await supabase
+    .from("profiles")
+    .update({ is_pro: false })
+    .eq("id", userId);
+  if (error) console.error("[stripe webhook] unsetPro failed", error);
+  else console.log("[stripe webhook] unsetPro success", { userId });
 }
 
 function userIdFromSession(session: Stripe.Checkout.Session): string | undefined {
@@ -42,8 +53,18 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
 async function handleSubscriptionActive(sub: Stripe.Subscription) {
   const userId = sub.metadata?.supabase_user_id?.trim();
   if (!userId) return;
+
   if (sub.status === "active" || sub.status === "trialing") {
+    console.log("[stripe webhook] setPro", { userId, status: sub.status, subId: sub.id });
     await setPro(userId);
+  } else if (
+    sub.status === "canceled" ||
+    sub.status === "unpaid" ||
+    sub.status === "incomplete_expired" ||
+    sub.status === "past_due"
+  ) {
+    console.log("[stripe webhook] unsetPro", { userId, status: sub.status, subId: sub.id });
+    await unsetPro(userId);
   }
 }
 
@@ -75,6 +96,7 @@ export async function POST(req: NextRequest) {
         break;
       case "customer.subscription.created":
       case "customer.subscription.updated":
+      case "customer.subscription.deleted":
         await handleSubscriptionActive(event.data.object as Stripe.Subscription);
         break;
       default:
