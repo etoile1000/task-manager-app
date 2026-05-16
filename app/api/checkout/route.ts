@@ -88,7 +88,6 @@ export async function GET(req: NextRequest) {
     };
 
     if (mode === "subscription") {
-      params.payment_method_collection = "always";
       params.subscription_data = { metadata };
     } else {
       params.payment_intent_data = { metadata };
@@ -99,7 +98,6 @@ export async function GET(req: NextRequest) {
       priceId,
       mode,
       recurring: Boolean(price.recurring),
-      paymentMethodCollection: params.payment_method_collection ?? null,
     });
 
     const session = await stripe.checkout.sessions.create(params);
