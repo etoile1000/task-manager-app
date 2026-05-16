@@ -331,6 +331,12 @@ input[type="date"]::-webkit-calendar-picker-indicator { opacity: 0.6; cursor: po
   border: 0.5px solid var(--border-secondary);
   background: var(--bg-secondary);
 }
+.tab-content > .pro-upgrade-panel {
+  margin-top: 1rem;
+}
+.pro-upgrade-modal {
+  max-width: 420px;
+}
 .pro-upgrade-ribbon {
   display: inline-flex;
   align-items: center;

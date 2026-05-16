@@ -110,8 +110,6 @@ function EffectOptionPreview({ id }: { id: EffectId }) {
 }
 
 function ProUpgradePanel() {
-  const checkoutUrl = process.env.NEXT_PUBLIC_STRIPE_PRO_CHECKOUT_URL?.trim();
-
   return (
     <div className="pro-upgrade-panel">
       <span className="pro-upgrade-ribbon">PRO</span>
@@ -120,18 +118,9 @@ function ProUpgradePanel() {
         グラデーション・アニメーション背景、マイ写真、完了時のエフェクトなど、これらの Pro
         限定機能をご利用いただけます。
       </p>
-      {checkoutUrl ? (
-        <a
-          href={checkoutUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="pro-upgrade-cta"
-        >
-          <i className="ti ti-sparkles" /> アップグレードする
-        </a>
-      ) : (
-        <p className="pro-upgrade-hint">決済ページの準備ができ次第、ここからお申し込みいただけます。</p>
-      )}
+      <a href="/api/checkout" className="pro-upgrade-cta">
+        <i className="ti ti-sparkles" /> アップグレードする
+      </a>
     </div>
   );
 }
@@ -173,6 +162,7 @@ export default function TaskDashboard({
   const [themeOpen, setThemeOpen] = useState(false);
   const [catOpen, setCatOpen] = useState(false);
   const [shareOpen, setShareOpen] = useState(false);
+  const [proPromptOpen, setProPromptOpen] = useState(false);
   const [tab, setTab] = useState<"theme" | "bg" | "effect">("theme");
   const [catEditIdx, setCatEditIdx] = useState<number | null>(null);
   const [catEditVal, setCatEditVal] = useState("");
@@ -279,6 +269,34 @@ export default function TaskDashboard({
       }
     },
     [effect, isPro],
+  );
+
+  const promptUpgrade = useCallback(() => {
+    setProPromptOpen(true);
+  }, []);
+
+  const selectBackground = useCallback(
+    (nextBg: string) => {
+      if (!isPro) {
+        promptUpgrade();
+        return;
+      }
+      setBg(nextBg);
+    },
+    [isPro, promptUpgrade],
+  );
+
+  const selectEffect = useCallback(
+    (nextEffect: EffectId) => {
+      if (!isPro) {
+        playEffect(true, nextEffect);
+        promptUpgrade();
+        return;
+      }
+      setEffect(nextEffect);
+      playEffect(true, nextEffect);
+    },
+    [isPro, playEffect, promptUpgrade],
   );
 
   const activeTasks = useMemo(() => {
@@ -500,7 +518,11 @@ export default function TaskDashboard({
   }, [tasks, shareCats, shareScope]);
 
   const handlePhoto = (file: File | null) => {
-    if (!isPro || !file) return;
+    if (!isPro) {
+      promptUpgrade();
+      return;
+    }
+    if (!file) return;
     const reader = new FileReader();
     reader.onload = () => {
       const src = String(reader.result || "");
@@ -510,7 +532,7 @@ export default function TaskDashboard({
       } catch {
         /* ignore */
       }
-      setBg("photo");
+      selectBackground("photo");
     };
     reader.readAsDataURL(file);
   };
@@ -900,137 +922,158 @@ export default function TaskDashboard({
           </div>
 
           <div className={`tab-content${tab === "bg" ? " active" : ""}`}>
-            {!isPro ? (
-              <ProUpgradePanel />
-            ) : (
-              <>
-                <div className="section-title">表示</div>
+            <div className="section-title">表示</div>
+            <div className="bg-grid">
+              <button
+                type="button"
+                className={`bg-card${bg === "none" ? " selected" : ""}`}
+                onClick={() => selectBackground("none")}
+              >
+                <div
+                  className="bg-preview"
+                  style={{ background: "var(--bg-tertiary)" }}
+                />
+                <div className="bg-label">デフォルト</div>
+                <div className="selected-check">✓</div>
+              </button>
+            </div>
+            <div className="section-title">グラデーション</div>
+            <div className="bg-grid">
+              {GRAD_BG_META.map((b) => (
+                <button
+                  key={b.id}
+                  type="button"
+                  className={`bg-card${bg === b.id ? " selected" : ""}`}
+                  onClick={() => selectBackground(b.id)}
+                >
+                  <div className="bg-preview" style={{ background: b.grad }} />
+                  <div className="bg-label">{b.label}</div>
+                  <div className="selected-check">✓</div>
+                </button>
+              ))}
+            </div>
+            <div className="section-title">アニメーション</div>
+            <div className="bg-grid">
+              {ANIM_BG_META.map((b) => (
+                <button
+                  key={b.id}
+                  type="button"
+                  className={`bg-card${bg === b.id ? " selected" : ""}`}
+                  onClick={() => selectBackground(b.id)}
+                >
+                  <div
+                    className="bg-preview"
+                    style={{ background: ANIM_PREVIEW[b.id] ?? "#eee" }}
+                  />
+                  <div className="bg-label">{b.label}</div>
+                  <div className="selected-check">✓</div>
+                </button>
+              ))}
+            </div>
+            <div className="section-title">マイ写真</div>
+            <label
+              className="upload-zone"
+              onClick={(e) => {
+                if (!isPro) {
+                  e.preventDefault();
+                  promptUpgrade();
+                }
+              }}
+            >
+              <i className="ti ti-photo-up" />
+              <p>クリックして写真を選択</p>
+              <input
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={(e) => handlePhoto(e.target.files?.[0] ?? null)}
+              />
+            </label>
+            {photoSrc ? (
+              <div className="mt-2">
                 <div className="bg-grid">
                   <button
                     type="button"
-                    className={`bg-card${bg === "none" ? " selected" : ""}`}
-                    onClick={() => setBg("none")}
+                    className={`bg-card${bg === "photo" ? " selected" : ""}`}
+                    onClick={() => selectBackground("photo")}
                   >
-                    <div
-                      className="bg-preview"
-                      style={{ background: "var(--bg-tertiary)" }}
-                    />
-                    <div className="bg-label">デフォルト</div>
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={photoSrc} alt="" className="h-full w-full object-cover" />
+                    <div className="bg-label">マイ写真</div>
                     <div className="selected-check">✓</div>
                   </button>
                 </div>
-                <div className="section-title">グラデーション</div>
-                <div className="bg-grid">
-                  {GRAD_BG_META.map((b) => (
-                    <button
-                      key={b.id}
-                      type="button"
-                      className={`bg-card${bg === b.id ? " selected" : ""}`}
-                      onClick={() => setBg(b.id)}
-                    >
-                      <div className="bg-preview" style={{ background: b.grad }} />
-                      <div className="bg-label">{b.label}</div>
-                      <div className="selected-check">✓</div>
-                    </button>
-                  ))}
-                </div>
-                <div className="section-title">アニメーション</div>
-                <div className="bg-grid">
-                  {ANIM_BG_META.map((b) => (
-                    <button
-                      key={b.id}
-                      type="button"
-                      className={`bg-card${bg === b.id ? " selected" : ""}`}
-                      onClick={() => setBg(b.id)}
-                    >
-                      <div
-                        className="bg-preview"
-                        style={{ background: ANIM_PREVIEW[b.id] ?? "#eee" }}
-                      />
-                      <div className="bg-label">{b.label}</div>
-                      <div className="selected-check">✓</div>
-                    </button>
-                  ))}
-                </div>
-                <div className="section-title">マイ写真</div>
-                <label className="upload-zone">
-                  <i className="ti ti-photo-up" />
-                  <p>クリックして写真を選択</p>
-                  <input
-                    type="file"
-                    accept="image/*"
-                    className="hidden"
-                    onChange={(e) => handlePhoto(e.target.files?.[0] ?? null)}
-                  />
-                </label>
-                {photoSrc ? (
-                  <div className="mt-2">
-                    <div className="bg-grid">
-                      <button
-                        type="button"
-                        className={`bg-card${bg === "photo" ? " selected" : ""}`}
-                        onClick={() => setBg("photo")}
-                      >
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img src={photoSrc} alt="" className="h-full w-full object-cover" />
-                        <div className="bg-label">マイ写真</div>
-                        <div className="selected-check">✓</div>
-                      </button>
-                    </div>
-                  </div>
-                ) : null}
-                <div
-                  className="mt-3 rounded-[var(--radius-md)] p-3 text-xs text-[var(--text-secondary)]"
-                  style={{ background: "var(--bg-secondary)" }}
-                >
-                  <i className="ti ti-info-circle mr-1" />
-                  背景はアカウントに紐づいて保存されます（写真はこのブラウザの localStorage
-                  にも保存されます）。
-                </div>
-              </>
-            )}
+              </div>
+            ) : null}
+            <div
+              className="mt-3 rounded-[var(--radius-md)] p-3 text-xs text-[var(--text-secondary)]"
+              style={{ background: "var(--bg-secondary)" }}
+            >
+              <i className="ti ti-info-circle mr-1" />
+              背景はアカウントに紐づいて保存されます（写真はこのブラウザの localStorage
+              にも保存されます）。
+            </div>
+            {!isPro ? <ProUpgradePanel /> : null}
           </div>
 
           <div className={`tab-content${tab === "effect" ? " active" : ""}`}>
-            {!isPro ? (
-              <ProUpgradePanel />
-            ) : (
-              <>
-                <p className="mb-4 text-[13px] leading-relaxed text-[var(--text-secondary)]">
-                  タスク完了時に演出を表示します。
-                </p>
-                <div className="flex flex-col gap-2.5">
-                  {(
-                    [
-                      { id: "none" as const, icon: "🚫", t: "なし", d: "エフェクトなし" },
-                      { id: "ko" as const, icon: "👊", t: "K.O!", d: "格闘ゲーム風・完了した瞬間ドンと出る" },
-                      { id: "combo" as const, icon: "🔥", t: "コンボ！", d: "連続完了でカウントが上がる" },
-                      { id: "sakura" as const, icon: "🌸", t: "桜吹雪", d: "ふわっと花びらが舞う" },
-                    ] as const
-                  ).map((o) => (
-                    <button
-                      key={o.id}
-                      type="button"
-                      className={`effect-opt-btn${effect === o.id ? " active" : ""}`}
-                      onClick={() => {
-                        setEffect(o.id);
-                        playEffect(true, o.id);
-                      }}
-                    >
-                      <div className="effect-opt-main">
-                        <span className="text-lg">{o.icon}</span>
-                        <div>
-                          <div className="text-sm font-medium">{o.t}</div>
-                          <div className="text-xs text-[var(--text-secondary)]">{o.d}</div>
-                        </div>
-                      </div>
-                      <EffectOptionPreview id={o.id} />
-                    </button>
-                  ))}
-                </div>
-              </>
-            )}
+            <p className="mb-4 text-[13px] leading-relaxed text-[var(--text-secondary)]">
+              タスク完了時に演出を表示します。
+            </p>
+            <div className="flex flex-col gap-2.5">
+              {(
+                [
+                  { id: "none" as const, icon: "🚫", t: "なし", d: "エフェクトなし" },
+                  { id: "ko" as const, icon: "👊", t: "K.O!", d: "格闘ゲーム風・完了した瞬間ドンと出る" },
+                  { id: "combo" as const, icon: "🔥", t: "コンボ！", d: "連続完了でカウントが上がる" },
+                  { id: "sakura" as const, icon: "🌸", t: "桜吹雪", d: "ふわっと花びらが舞う" },
+                ] as const
+              ).map((o) => (
+                <button
+                  key={o.id}
+                  type="button"
+                  className={`effect-opt-btn${effect === o.id ? " active" : ""}`}
+                  onClick={() => selectEffect(o.id)}
+                >
+                  <div className="effect-opt-main">
+                    <span className="text-lg">{o.icon}</span>
+                    <div>
+                      <div className="text-sm font-medium">{o.t}</div>
+                      <div className="text-xs text-[var(--text-secondary)]">{o.d}</div>
+                    </div>
+                  </div>
+                  <EffectOptionPreview id={o.id} />
+                </button>
+              ))}
+            </div>
+            {!isPro ? <ProUpgradePanel /> : null}
           </div>
+        </div>
+      </div>
+
+      {/* Pro upgrade prompt */}
+      <div
+        className={`modal-overlay${proPromptOpen ? " open" : ""}`}
+        role="presentation"
+        onClick={(e) => {
+          if (e.target === e.currentTarget) setProPromptOpen(false);
+        }}
+      >
+        <div className="modal pro-upgrade-modal">
+          <div className="modal-header">
+            <div className="modal-title">
+              <i className="ti ti-sparkles mr-1.5 inline" />
+              Pro限定機能
+            </div>
+            <button
+              type="button"
+              className="modal-close"
+              onClick={() => setProPromptOpen(false)}
+            >
+              <i className="ti ti-x" />
+            </button>
+          </div>
+          <ProUpgradePanel />
         </div>
       </div>
 
