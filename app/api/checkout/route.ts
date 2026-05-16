@@ -2,15 +2,24 @@ import { NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
 import { createClient } from "@/lib/supabase-server";
 
+const PRO_TRIAL_DAYS = 7;
+
 function getStripe(): Stripe {
   const key = process.env.STRIPE_SECRET_KEY;
   if (!key) throw new Error("STRIPE_SECRET_KEY is not set");
   return new Stripe(key);
 }
 
-async function resolvePriceId(stripe: Stripe): Promise<string | null> {
+
+type ResolvedPrice =
+  | { priceId: string; source: "STRIPE_PRO_PRICE_ID" }
+  | { priceId: string; source: "PAYMENT_LINK" };
+
+async function resolvePriceId(stripe: Stripe): Promise<ResolvedPrice | null> {
   const explicitPriceId = process.env.STRIPE_PRO_PRICE_ID?.trim();
-  if (explicitPriceId) return explicitPriceId;
+  if (explicitPriceId) {
+    return { priceId: explicitPriceId, source: "STRIPE_PRO_PRICE_ID" };
+  }
 
   const paymentLinkUrl = process.env.NEXT_PUBLIC_STRIPE_PRO_CHECKOUT_URL?.trim();
   if (!paymentLinkUrl) return null;
@@ -33,7 +42,7 @@ async function resolvePriceId(stripe: Stripe): Promise<string | null> {
     return null;
   }
 
-  return priceId;
+  return { priceId, source: "PAYMENT_LINK" };
 }
 
 export async function GET(req: NextRequest) {
@@ -51,8 +60,8 @@ export async function GET(req: NextRequest) {
     }
 
     const stripe = getStripe();
-    const priceId = await resolvePriceId(stripe);
-    if (!priceId) {
+    const resolvedPrice = await resolvePriceId(stripe);
+    if (!resolvedPrice) {
       console.error(
         "[checkout] Missing STRIPE_PRO_PRICE_ID and could not resolve price from Payment Link",
       );
@@ -62,6 +71,7 @@ export async function GET(req: NextRequest) {
       );
     }
 
+    const { priceId, source: priceSource } = resolvedPrice;
     const price = await stripe.prices.retrieve(priceId);
     const mode = price.recurring ? "subscription" : "payment";
     const metadata = {
@@ -80,10 +90,28 @@ export async function GET(req: NextRequest) {
     };
 
     if (mode === "subscription") {
-      params.subscription_data = { metadata };
+      params.payment_method_collection = "if_required";
+      params.subscription_data = {
+        metadata,
+        trial_period_days: PRO_TRIAL_DAYS,
+        trial_settings: {
+          end_behavior: {
+            missing_payment_method: "cancel",
+          },
+        },
+      };
     } else {
       params.payment_intent_data = { metadata };
     }
+
+    console.info("[checkout] creating session", {
+      priceSource,
+      priceId,
+      mode,
+      recurring: Boolean(price.recurring),
+      trialPeriodDays: mode === "subscription" ? PRO_TRIAL_DAYS : null,
+      paymentMethodCollection: params.payment_method_collection ?? null,
+    });
 
     const session = await stripe.checkout.sessions.create(params);
 
