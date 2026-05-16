@@ -100,10 +100,9 @@ const SAKURA_PREVIEW_PETALS = [
 ] as const;
 
 function EffectOptionPreview({ id }: { id: EffectId }) {
-  if (id === "none") return null;
-
   return (
     <div className="effect-opt-preview" aria-hidden>
+      {id === "none" && <span className="effect-preview-none">OFF</span>}
       {id === "ko" && <span className="effect-preview-ko">K.O!</span>}
       {id === "sakura" && (
         <div className="effect-preview-sakura">
@@ -1169,22 +1168,19 @@ export default function TaskDashboard({
             <p className="mb-4 text-[13px] leading-relaxed text-[var(--text-secondary)]">
               タスク完了時に演出を表示します。
             </p>
-            <div className="flex flex-col gap-2.5">
+            <div className="effect-grid">
               {EFFECT_META.map((o) => (
                 <button
                   key={o.id}
                   type="button"
-                  className={`effect-opt-btn${effect === o.id ? " active" : ""}`}
+                  className={`effect-card${effect === o.id ? " selected" : ""}`}
                   onClick={() => selectEffect(o.id)}
                 >
-                  <div className="effect-opt-main">
-                    <span className="text-lg">{o.emoji}</span>
-                    <div>
-                      <div className="text-sm font-medium">{o.name}</div>
-                      <div className="text-xs text-[var(--text-secondary)]">{o.desc}</div>
-                    </div>
-                  </div>
                   <EffectOptionPreview id={o.id} />
+                  <div className="effect-card-label">
+                    {o.emoji} {o.name}
+                  </div>
+                  <div className="selected-check">✓</div>
                 </button>
               ))}
             </div>
