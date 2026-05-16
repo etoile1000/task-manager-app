@@ -156,17 +156,34 @@ function BackgroundPreviewCanvas({ id }: { id: string }) {
     const background = BACKGROUND_LIST.find((item) => item.id === id);
     if (!background) return;
 
+    let stop: (() => void) | null = null;
+    let timer: ReturnType<typeof setTimeout> | null = null;
+    let mounted = true;
+
     const resize = () => {
-      canvas.width = canvas.offsetWidth;
-      canvas.height = canvas.offsetHeight;
+      canvas.width = canvas.offsetWidth || 160;
+      canvas.height = canvas.offsetHeight || 100;
     };
-    resize();
-    const stop = mountBackground(canvas, background.id);
-    window.addEventListener("resize", resize);
+
+    const start = () => {
+      if (!mounted || stop) return;
+      resize();
+      stop = mountBackground(canvas, background.id);
+    };
+
+    const observer = new ResizeObserver(() => {
+      resize();
+      start();
+    });
+
+    observer.observe(canvas);
+    timer = setTimeout(start, 0);
 
     return () => {
-      window.removeEventListener("resize", resize);
-      stop();
+      mounted = false;
+      observer.disconnect();
+      if (timer) clearTimeout(timer);
+      stop?.();
     };
   }, [id]);
 
