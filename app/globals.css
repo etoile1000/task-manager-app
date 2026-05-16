@@ -34,11 +34,12 @@
   position: fixed; inset: 0; z-index: 0;
   background: var(--bg-tertiary);
   transition: background 0.5s;
+  pointer-events: none;
 }
-#bg-canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
+#bg-canvas { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
 #bg-image {
   position: absolute; inset: 0; width: 100%; height: 100%;
-  object-fit: cover; display: none;
+  object-fit: cover; display: none; pointer-events: none;
 }
 
 body {
@@ -273,6 +274,12 @@ input[type="date"]::-webkit-calendar-picker-indicator { opacity: 0.6; cursor: po
 }
 .effect-preview-petal {
   position: absolute; border-radius: 50%;
+}
+.effect-preview-beam {
+  width: 58px; height: 7px; border-radius: 999px;
+  background: linear-gradient(90deg, transparent, #f97316, #ec4899, #8b5cf6, transparent);
+  box-shadow: 0 0 14px rgba(249,115,22,0.65);
+  transform: rotate(-8deg);
 }
 .effect-opt-btn:hover { border-color: var(--border-secondary); }
 .effect-opt-btn.active { border-color: var(--accent); background: var(--bg); box-shadow: 0 0 0 1px var(--accent); }

@@ -2,13 +2,10 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import {
-  ANIM_BG_META,
-  ANIM_PREVIEW,
-  BgLayer,
-  GRAD_BG_META,
-} from "@/components/bg-layer";
+import { BACKGROUND_LIST, mountBackground } from "@/lib/backgrounds";
+import { EFFECT_META, triggerEffect, type EffectId } from "@/lib/effects";
 import { createClient } from "@/lib/supabase";
+import { applyTheme, THEME_LIST, type ThemeId } from "@/lib/themes";
 import {
   daysUntil,
   dueLabel,
@@ -17,16 +14,43 @@ import {
   scoreTask,
   normalizeCategories,
 } from "@/lib/task-utils";
-import type { Priority, ProfileRow, TaskRow, ThemeId } from "@/lib/types";
+import type { Priority, ProfileRow, TaskRow } from "@/lib/types";
 
 const DEFAULT_CATS = ["仕事", "etoile", "個人"];
 
-type EffectId = "none" | "ko" | "combo" | "sakura";
+const THEME_STORAGE_KEY = "doova-theme";
+const EFFECT_STORAGE_KEY = "doova-effect";
+
+const GRADIENT_BACKGROUNDS = [
+  { id: "sunset", label: "サンセット", grad: "linear-gradient(135deg,#f97316,#ec4899,#8b5cf6)" },
+  { id: "ocean", label: "オーシャン", grad: "linear-gradient(135deg,#0ea5e9,#06b6d4,#10b981)" },
+  { id: "aurora_grad", label: "オーロラ", grad: "linear-gradient(135deg,#4f46e5,#7c3aed,#059669)" },
+  { id: "midnight", label: "ミッドナイト", grad: "linear-gradient(135deg,#1e1b4b,#312e81,#4c1d95)" },
+  { id: "rose", label: "ローズ", grad: "linear-gradient(135deg,#fda4af,#f9a8d4,#c4b5fd)" },
+  { id: "forest", label: "フォレスト", grad: "linear-gradient(135deg,#14532d,#166534,#065f46)" },
+  { id: "gold", label: "ゴールド", grad: "linear-gradient(135deg,#92400e,#d97706,#fbbf24)" },
+  { id: "peach", label: "ピーチ", grad: "linear-gradient(135deg,#fed7aa,#fca5a5,#f9a8d4)" },
+] as const;
 
 function normalizeEffect(raw: string | null | undefined): EffectId {
   const v = String(raw ?? "ko").trim().toLowerCase();
-  if (v === "none" || v === "ko" || v === "combo" || v === "sakura") return v;
+  if (EFFECT_META.some((e) => e.id === v)) return v as EffectId;
   return "ko";
+}
+
+function normalizeTheme(raw: string | null | undefined): ThemeId {
+  const v = String(raw ?? "minimal").trim().toLowerCase();
+  if (THEME_LIST.some((t) => t.id === v)) return v as ThemeId;
+  return "minimal";
+}
+
+function normalizeBackground(raw: string | null | undefined): string {
+  const v = String(raw ?? "none").trim().toLowerCase();
+  if (v === "neon") return "neon_rain";
+  if (v === "none" || v === "photo") return v;
+  if (GRADIENT_BACKGROUNDS.some((b) => b.id === v)) return v;
+  if (BACKGROUND_LIST.some((b) => b.id === v)) return v;
+  return "none";
 }
 
 type Props = {
@@ -105,6 +129,26 @@ function EffectOptionPreview({ id }: { id: EffectId }) {
           ))}
         </div>
       )}
+      {id === "beam" && <span className="effect-preview-beam" />}
+      {id === "confetti" && (
+        <div className="effect-preview-sakura">
+          {SAKURA_PREVIEW_PETALS.map((p, i) => (
+            <span
+              key={i}
+              className="effect-preview-petal"
+              style={{
+                left: p.left,
+                top: p.top,
+                width: p.w,
+                height: p.h,
+                transform: `rotate(${p.rot}deg)`,
+                background: ["#f97316", "#ec4899", "#8b5cf6", "#fcd34d"][i % 4],
+                borderRadius: i % 2 === 0 ? 2 : "50%",
+              }}
+            />
+          ))}
+        </div>
+      )}
     </div>
   );
 }
@@ -134,13 +178,15 @@ export default function TaskDashboard({
   const router = useRouter();
   const supabase = useMemo(() => createClient(), []);
   const isPro = initialProfile.is_pro === true;
+  const bgCanvasRef = useRef<HTMLCanvasElement>(null);
+  const bgStopRef = useRef<(() => void) | null>(null);
 
   const [tasks, setTasks] = useState<TaskRow[]>(initialTasks);
   const [theme, setTheme] = useState<ThemeId>(
-    (initialProfile.theme as ThemeId) || "minimal",
+    normalizeTheme(initialProfile.theme),
   );
   const [bg, setBg] = useState(() =>
-    isPro ? initialProfile.bg || "none" : "none",
+    isPro ? normalizeBackground(initialProfile.bg) : "none",
   );
   const [effect, setEffect] = useState<EffectId>(() =>
     isPro ? normalizeEffect(initialProfile.effect) : "none",
@@ -174,10 +220,6 @@ export default function TaskDashboard({
   const [photoSrc, setPhotoSrc] = useState<string | null>(null);
   const photoKey = `taskman_photo_${userId}`;
 
-  const effectOverlayRef = useRef<HTMLDivElement>(null);
-  const comboCountRef = useRef(0);
-  const comboTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
   useEffect(() => {
     if (!isPro) {
       setPhotoSrc(null);
@@ -192,11 +234,61 @@ export default function TaskDashboard({
   }, [isPro, photoKey]);
 
   useEffect(() => {
-    document.body.setAttribute(
-      "data-theme",
-      theme === "minimal" ? "" : theme,
-    );
+    try {
+      const savedTheme = localStorage.getItem(THEME_STORAGE_KEY);
+      if (savedTheme) setTheme(normalizeTheme(savedTheme));
+      const savedEffect = localStorage.getItem(EFFECT_STORAGE_KEY);
+      if (isPro && savedEffect) setEffect(normalizeEffect(savedEffect));
+    } catch {
+      /* ignore */
+    }
+  }, [isPro]);
+
+  useEffect(() => {
+    document.body.setAttribute("data-theme", theme === "minimal" ? "" : theme);
+    applyTheme(theme);
+    try {
+      localStorage.setItem(THEME_STORAGE_KEY, theme);
+    } catch {
+      /* ignore */
+    }
   }, [theme]);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(EFFECT_STORAGE_KEY, effect);
+    } catch {
+      /* ignore */
+    }
+  }, [effect]);
+
+  useEffect(() => {
+    const canvas = bgCanvasRef.current;
+    if (!canvas) return;
+
+    bgStopRef.current?.();
+    bgStopRef.current = null;
+    canvas.style.display = "none";
+
+    const selectedBg = isPro ? bg : "none";
+    const animatedBg = BACKGROUND_LIST.find((item) => item.id === selectedBg);
+    if (!animatedBg) return;
+
+    const resize = () => {
+      canvas.width = canvas.offsetWidth;
+      canvas.height = canvas.offsetHeight;
+    };
+    resize();
+    window.addEventListener("resize", resize);
+    canvas.style.display = "block";
+    bgStopRef.current = mountBackground(canvas, animatedBg.id);
+
+    return () => {
+      window.removeEventListener("resize", resize);
+      bgStopRef.current?.();
+      bgStopRef.current = null;
+    };
+  }, [bg, isPro]);
 
   const persistProfile = useCallback(
     async (patch: Partial<Pick<ProfileRow, "theme" | "bg" | "effect">> & {
@@ -221,52 +313,8 @@ export default function TaskDashboard({
     (preview = false, effectOverride?: EffectId) => {
       if (!isPro && !preview) return;
       const id = effectOverride ?? effect;
-      if (!preview && id === "none") return;
-      const overlay = effectOverlayRef.current;
-      if (!overlay) return;
-      overlay.innerHTML = "";
-
-      if (id === "ko") {
-        const el = document.createElement("div");
-        el.className = "effect-ko";
-        el.textContent = "K.O!";
-        overlay.appendChild(el);
-        setTimeout(() => {
-          overlay.innerHTML = "";
-        }, 1300);
-      } else if (id === "combo") {
-        if (!preview) {
-          comboCountRef.current += 1;
-          if (comboTimerRef.current) clearTimeout(comboTimerRef.current);
-          comboTimerRef.current = setTimeout(() => {
-            comboCountRef.current = 0;
-          }, 3000);
-        }
-        const n = preview ? 1 : comboCountRef.current;
-        const el = document.createElement("div");
-        el.className = "effect-combo";
-        el.innerHTML = `<div class="effect-combo-num">${n}</div><div class="effect-combo-label">COMBO!</div>`;
-        overlay.appendChild(el);
-        setTimeout(() => {
-          overlay.innerHTML = "";
-        }, 1500);
-      } else if (id === "sakura") {
-        const colors = ["#f9a8d4", "#fda4af", "#c4b5fd", "#fbcfe8", "#fecdd3"];
-        for (let i = 0; i < 30; i++) {
-          setTimeout(() => {
-            const p = document.createElement("div");
-            p.className = "effect-petal";
-            p.style.left = `${Math.random() * 100}vw`;
-            p.style.background =
-              colors[Math.floor(Math.random() * colors.length)] ?? "#f9a8d4";
-            p.style.width = `${Math.random() * 8 + 6}px`;
-            p.style.height = `${Math.random() * 5 + 4}px`;
-            p.style.animationDuration = `${Math.random() * 2 + 1.5}s`;
-            overlay.appendChild(p);
-            setTimeout(() => p.remove(), 3500);
-          }, i * 60);
-        }
-      }
+      if (id === "none") return;
+      triggerEffect(id);
     },
     [effect, isPro],
   );
@@ -537,13 +585,29 @@ export default function TaskDashboard({
     reader.readAsDataURL(file);
   };
 
+  const activeBg = isPro ? bg : "none";
+  const gradientBg = GRADIENT_BACKGROUNDS.find((item) => item.id === activeBg);
+  const isAnimatedBg = BACKGROUND_LIST.some((item) => item.id === activeBg);
+
   return (
     <>
-      <BgLayer
-        currentBg={isPro ? bg : "none"}
-        photoSrc={isPro && bg === "photo" ? photoSrc : null}
-      />
-      <div id="effect-overlay" ref={effectOverlayRef} />
+      <div
+        id="bg-layer"
+        style={{ background: gradientBg?.grad }}
+      >
+        <canvas
+          id="bg-canvas"
+          ref={bgCanvasRef}
+          style={{ display: isAnimatedBg ? "block" : "none" }}
+        />
+        {/* eslint-disable-next-line @next/next/no-img-element -- dynamic data URL from user */}
+        <img
+          id="bg-image"
+          src={activeBg === "photo" && photoSrc ? photoSrc : undefined}
+          alt=""
+          style={{ display: activeBg === "photo" && photoSrc ? "block" : "none" }}
+        />
+      </div>
 
       <div className="container">
         <div className="header">
@@ -889,32 +953,80 @@ export default function TaskDashboard({
 
           <div className={`tab-content${tab === "theme" ? " active" : ""}`}>
             <div className="theme-grid">
-              {(
-                [
-                  { id: "minimal" as const, prev: "prev-minimal", label: "ミニマル" },
-                  { id: "cyber" as const, prev: "prev-cyber", label: "サイバー" },
-                  { id: "pastel" as const, prev: "prev-pastel", label: "パステル" },
-                ] as const
-              ).map((tm) => (
+              {THEME_LIST.map((tm) => (
                 <button
                   key={tm.id}
                   type="button"
                   className={`theme-card${theme === tm.id ? " selected" : ""}`}
                   onClick={() => setTheme(tm.id)}
                 >
-                  <div className={`theme-preview ${tm.prev}`}>
-                    <div className="tp-bar" />
-                    <div className="tp-card">
-                      <div className="tp-dot" />
-                      <div className="tp-line" />
-                      <div className="tp-badge" />
+                  <div
+                    className="theme-preview"
+                    style={{ background: tm.vars["--bg-primary"] }}
+                  >
+                    <div
+                      className="tp-bar"
+                      style={{ background: tm.vars["--bg-secondary"] }}
+                    />
+                    <div
+                      className="tp-card"
+                      style={{
+                        background: tm.vars["--bg-card"],
+                        border: `0.5px solid ${tm.vars["--border-color"]}`,
+                        borderRadius: tm.vars["--card-border-radius"],
+                      }}
+                    >
+                      <div
+                        className="tp-dot"
+                        style={{
+                          background: tm.vars["--checkbox-done-bg"],
+                          borderRadius: tm.id === "mono" ? 0 : undefined,
+                        }}
+                      />
+                      <div
+                        className="tp-line"
+                        style={{ background: tm.vars["--text-muted"] }}
+                      />
+                      <div
+                        className="tp-badge"
+                        style={{ background: tm.vars["--badge-urgent-bg"] }}
+                      />
                     </div>
-                    <div className="tp-card">
-                      <div className="tp-dot" />
-                      <div className="tp-line" style={{ width: "60%" }} />
+                    <div
+                      className="tp-card"
+                      style={{
+                        background: tm.vars["--bg-card-hover"],
+                        border: `0.5px solid ${tm.vars["--border-color"]}`,
+                        borderRadius: tm.vars["--card-border-radius"],
+                      }}
+                    >
+                      <div
+                        className="tp-dot"
+                        style={{
+                          border: `1px solid ${tm.vars["--checkbox-border"]}`,
+                          background: "transparent",
+                          borderRadius: tm.id === "mono" ? 0 : undefined,
+                        }}
+                      />
+                      <div
+                        className="tp-line"
+                        style={{
+                          width: "60%",
+                          background: tm.vars["--text-muted"],
+                        }}
+                      />
                     </div>
                   </div>
-                  <div className={`theme-name ${tm.prev}`}>{tm.label}</div>
+                  <div
+                    className="theme-name"
+                    style={{
+                      background: tm.vars["--bg-secondary"],
+                      color: tm.vars["--text-primary"],
+                    }}
+                  >
+                    {tm.name}
+                    {tm.isNew ? <span className="pro-badge">NEW</span> : null}
+                  </div>
                   <div className="selected-check">✓</div>
                 </button>
               ))}
@@ -939,7 +1051,7 @@ export default function TaskDashboard({
             </div>
             <div className="section-title">グラデーション</div>
             <div className="bg-grid">
-              {GRAD_BG_META.map((b) => (
+              {GRADIENT_BACKGROUNDS.map((b) => (
                 <button
                   key={b.id}
                   type="button"
@@ -954,7 +1066,7 @@ export default function TaskDashboard({
             </div>
             <div className="section-title">アニメーション</div>
             <div className="bg-grid">
-              {ANIM_BG_META.map((b) => (
+              {BACKGROUND_LIST.map((b) => (
                 <button
                   key={b.id}
                   type="button"
@@ -963,9 +1075,12 @@ export default function TaskDashboard({
                 >
                   <div
                     className="bg-preview"
-                    style={{ background: ANIM_PREVIEW[b.id] ?? "#eee" }}
+                    style={{ background: "#0f0e17" }}
                   />
-                  <div className="bg-label">{b.label}</div>
+                  <div className="bg-label">
+                    {b.emoji} {b.name}
+                    {b.isNew ? <span className="pro-badge">NEW</span> : null}
+                  </div>
                   <div className="selected-check">✓</div>
                 </button>
               ))}
@@ -1021,14 +1136,7 @@ export default function TaskDashboard({
               タスク完了時に演出を表示します。
             </p>
             <div className="flex flex-col gap-2.5">
-              {(
-                [
-                  { id: "none" as const, icon: "🚫", t: "なし", d: "エフェクトなし" },
-                  { id: "ko" as const, icon: "👊", t: "K.O!", d: "格闘ゲーム風・完了した瞬間ドンと出る" },
-                  { id: "combo" as const, icon: "🔥", t: "コンボ！", d: "連続完了でカウントが上がる" },
-                  { id: "sakura" as const, icon: "🌸", t: "桜吹雪", d: "ふわっと花びらが舞う" },
-                ] as const
-              ).map((o) => (
+              {EFFECT_META.map((o) => (
                 <button
                   key={o.id}
                   type="button"
@@ -1036,10 +1144,10 @@ export default function TaskDashboard({
                   onClick={() => selectEffect(o.id)}
                 >
                   <div className="effect-opt-main">
-                    <span className="text-lg">{o.icon}</span>
+                    <span className="text-lg">{o.emoji}</span>
                     <div>
-                      <div className="text-sm font-medium">{o.t}</div>
-                      <div className="text-xs text-[var(--text-secondary)]">{o.d}</div>
+                      <div className="text-sm font-medium">{o.name}</div>
+                      <div className="text-xs text-[var(--text-secondary)]">{o.desc}</div>
                     </div>
                   </div>
                   <EffectOptionPreview id={o.id} />

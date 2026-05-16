@@ -1,6 +1,6 @@
 export type Priority = "urgent" | "high" | "mid" | "low";
 
-export type ThemeId = "minimal" | "cyber" | "pastel";
+export type ThemeId = "minimal" | "cyber" | "pastel" | "glass" | "neon" | "mono";
 
 export type TaskRow = {
   id: string;
