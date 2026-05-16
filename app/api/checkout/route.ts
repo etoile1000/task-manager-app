@@ -90,7 +90,7 @@ export async function GET(req: NextRequest) {
     };
 
     if (mode === "subscription") {
-      params.payment_method_collection = "if_required";
+      params.payment_method_collection = "always";
       params.subscription_data = {
         metadata,
         trial_period_days: PRO_TRIAL_DAYS,
