@@ -11,7 +11,7 @@
 //   triggerEffect("confetti");    // コンフェッティ
 // ============================================================
 
-export type EffectId = "none" | "ko" | "combo" | "sakura" | "beam" | "confetti";
+export type EffectId = "none" | "ko" | "sakura" | "beam" | "confetti";
 
 /* ============================================================
    内部：Canvas + Overlay の生成・破棄
@@ -449,7 +449,6 @@ function effectConfetti() {
 export const EFFECTS: Record<EffectId, () => void> = {
   none:      clearEffect,
   ko:        effectKO,
-  combo:     effectFirework,
   sakura:    effectSakura,
   beam:      effectBeam,
   confetti:  effectConfetti,
@@ -466,7 +465,6 @@ export function triggerEffect(id: EffectId): void {
 export const EFFECT_META: { id: EffectId; name: string; emoji: string; desc: string }[] = [
   { id: "none",     name: "なし",       emoji: "🚫", desc: "エフェクトなし" },
   { id: "ko",       name: "K.O!",       emoji: "💥", desc: "衝撃波＋巨大文字が炸裂" },
-  { id: "combo",    name: "コンボ！",   emoji: "🔥", desc: "連続達成を花火で祝う" },
   { id: "sakura",   name: "桜吹雪",     emoji: "🌸", desc: "ふわっと花びらが舞う" },
   { id: "beam",     name: "ビーム",     emoji: "🔦", desc: "3色の光線が画面を横断" },
   { id: "confetti", name: "コンフェッティ", emoji: "🎊", desc: "物理演算で降り注ぐ紙吹雪" },

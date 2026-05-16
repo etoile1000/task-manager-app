@@ -105,12 +105,6 @@ function EffectOptionPreview({ id }: { id: EffectId }) {
   return (
     <div className="effect-opt-preview" aria-hidden>
       {id === "ko" && <span className="effect-preview-ko">K.O!</span>}
-      {id === "combo" && (
-        <div className="effect-preview-combo">
-          <span className="effect-preview-combo-num">2</span>
-          <span className="effect-preview-combo-label">COMBO!</span>
-        </div>
-      )}
       {id === "sakura" && (
         <div className="effect-preview-sakura">
           {SAKURA_PREVIEW_PETALS.map((p, i) => (
@@ -151,6 +145,32 @@ function EffectOptionPreview({ id }: { id: EffectId }) {
       )}
     </div>
   );
+}
+
+function BackgroundPreviewCanvas({ id }: { id: string }) {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const background = BACKGROUND_LIST.find((item) => item.id === id);
+    if (!background) return;
+
+    const resize = () => {
+      canvas.width = canvas.offsetWidth;
+      canvas.height = canvas.offsetHeight;
+    };
+    resize();
+    const stop = mountBackground(canvas, background.id);
+    window.addEventListener("resize", resize);
+
+    return () => {
+      window.removeEventListener("resize", resize);
+      stop();
+    };
+  }, [id]);
+
+  return <canvas className="bg-preview" ref={canvasRef} aria-hidden />;
 }
 
 function ProUpgradePanel() {
@@ -1073,10 +1093,7 @@ export default function TaskDashboard({
                   className={`bg-card${bg === b.id ? " selected" : ""}`}
                   onClick={() => selectBackground(b.id)}
                 >
-                  <div
-                    className="bg-preview"
-                    style={{ background: "#0f0e17" }}
-                  />
+                  <BackgroundPreviewCanvas id={b.id} />
                   <div className="bg-label">
                     {b.emoji} {b.name}
                     {b.isNew ? <span className="pro-badge">NEW</span> : null}

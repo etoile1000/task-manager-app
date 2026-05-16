@@ -484,12 +484,15 @@ const sand: DoovaBackground = {
         p.life--;
         if (p.life <= 0) {
           p.life = p.maxLife;
-          p.x = -10;
+          p.x = Math.random() * canvas.width;
           p.y = Math.random() * canvas.height;
         }
         p.x += p.vx;
         p.y += p.vy;
-        if (p.x > canvas.width + 10) { p.x = -10; }
+        if (p.x > canvas.width + 10) {
+          p.x = Math.random() * canvas.width;
+          p.y = Math.random() * canvas.height;
+        }
 
         const fade = Math.sin((p.life / p.maxLife) * Math.PI);
         ctx.beginPath();
