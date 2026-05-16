@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { BACKGROUND_LIST, mountBackground } from "@/lib/backgrounds";
 import { EFFECT_META, triggerEffect, type EffectId } from "@/lib/effects";
 import { createClient } from "@/lib/supabase";
-import { applyTheme, THEME_LIST, type ThemeId } from "@/lib/themes";
+import { applyTheme, THEMES, THEME_LIST, type ThemeId } from "@/lib/themes";
 import {
   daysUntil,
   dueLabel,
@@ -100,6 +100,37 @@ function CardCheck() {
           strokeWidth="1.6"
           strokeLinecap="round"
           strokeLinejoin="round"
+        />
+      </svg>
+    </div>
+  );
+}
+
+function ProThemeBadge() {
+  return (
+    <div className="pro-badge">
+      <svg width="9" height="9" viewBox="0 0 10 10" fill="none" aria-hidden>
+        <path
+          d="M5 1L6.5 3.5L9.5 4L7.5 6.5L8 9.5L5 8L2 9.5L2.5 6.5L0.5 4L3.5 3.5Z"
+          fill="white"
+          opacity="0.9"
+        />
+      </svg>
+      PRO
+    </div>
+  );
+}
+
+function LockOverlay() {
+  return (
+    <div className="lock-overlay">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden>
+        <rect x="5" y="11" width="14" height="10" rx="2" fill="white" opacity="0.9" />
+        <path
+          d="M8 11V7a4 4 0 018 0v4"
+          stroke="white"
+          strokeWidth="2"
+          strokeLinecap="round"
         />
       </svg>
     </div>
@@ -321,9 +352,10 @@ export default function TaskDashboard({
   const bgStopRef = useRef<(() => void) | null>(null);
 
   const [tasks, setTasks] = useState<TaskRow[]>(initialTasks);
-  const [theme, setTheme] = useState<ThemeId>(
-    normalizeTheme(initialProfile.theme),
-  );
+  const [theme, setTheme] = useState<ThemeId>(() => {
+    const initialTheme = normalizeTheme(initialProfile.theme);
+    return THEMES[initialTheme].isPro && !isPro ? "minimal" : initialTheme;
+  });
   const [bg, setBg] = useState(() =>
     isPro ? normalizeBackground(initialProfile.bg) : "none",
   );
@@ -375,7 +407,10 @@ export default function TaskDashboard({
   useEffect(() => {
     try {
       const savedTheme = localStorage.getItem(THEME_STORAGE_KEY);
-      if (savedTheme) setTheme(normalizeTheme(savedTheme));
+      if (savedTheme) {
+        const nextTheme = normalizeTheme(savedTheme);
+        if (!THEMES[nextTheme].isPro || isPro) setTheme(nextTheme);
+      }
       const savedEffect = localStorage.getItem(EFFECT_STORAGE_KEY);
       if (isPro && savedEffect) setEffect(normalizeEffect(savedEffect));
     } catch {
@@ -461,6 +496,24 @@ export default function TaskDashboard({
   const promptUpgrade = useCallback(() => {
     setProPromptOpen(true);
   }, []);
+
+  const selectTheme = useCallback(
+    (nextTheme: ThemeId) => {
+      if (THEMES[nextTheme].isPro && !isPro) {
+        promptUpgrade();
+        return;
+      }
+      document.body.setAttribute("data-theme", nextTheme === "minimal" ? "" : nextTheme);
+      applyTheme(nextTheme);
+      try {
+        localStorage.setItem(THEME_STORAGE_KEY, nextTheme);
+      } catch {
+        /* ignore */
+      }
+      setTheme(nextTheme);
+    },
+    [isPro, promptUpgrade],
+  );
 
   const selectBackground = useCallback(
     (nextBg: string) => {
@@ -1079,14 +1132,14 @@ export default function TaskDashboard({
               className={`tab-btn${tab === "bg" ? " active" : ""}`}
               onClick={() => setTab("bg")}
             >
-              🖼️ 背景 <span className="pro-badge">PRO</span>
+              🖼️ 背景 <span className="tab-pro-badge">PRO</span>
             </button>
             <button
               type="button"
               className={`tab-btn${tab === "effect" ? " active" : ""}`}
               onClick={() => setTab("effect")}
             >
-              ⚡ 完了エフェクト <span className="pro-badge">PRO</span>
+              ⚡ 完了エフェクト <span className="tab-pro-badge">PRO</span>
             </button>
           </div>
 
@@ -1096,9 +1149,11 @@ export default function TaskDashboard({
                 <button
                   key={tm.id}
                   type="button"
-                  className={`theme-card card${theme === tm.id ? " selected" : ""}`}
-                  onClick={() => setTheme(tm.id)}
+                  className={`theme-card card${theme === tm.id ? " selected sel" : ""}${tm.isPro && !isPro ? " locked" : ""}`}
+                  onClick={() => selectTheme(tm.id)}
                 >
+                  {tm.isPro ? <ProThemeBadge /> : null}
+                  {tm.isPro && !isPro ? <LockOverlay /> : null}
                   <div
                     className="theme-preview"
                     style={{ background: tm.vars["--bg-primary"] }}

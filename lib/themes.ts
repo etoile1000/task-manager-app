@@ -187,7 +187,7 @@ export const THEMES: Record<ThemeId, DoovaTheme> = {
     id: "glass",
     name: "グラス",
     nameEn: "Glass",
-    isPro: false,
+    isPro: true,
     isNew: true,
     vars: {
       "--bg-primary":        "linear-gradient(135deg,#1a0533 0%,#0d1a3a 50%,#001a2e 100%)",
@@ -226,7 +226,7 @@ export const THEMES: Record<ThemeId, DoovaTheme> = {
     id: "neon",
     name: "ネオン",
     nameEn: "Neon",
-    isPro: false,
+    isPro: true,
     isNew: true,
     vars: {
       "--bg-primary":        "#050508",
@@ -266,7 +266,7 @@ export const THEMES: Record<ThemeId, DoovaTheme> = {
     id: "mono",
     name: "モノクローム",
     nameEn: "Mono",
-    isPro: false,
+    isPro: true,
     isNew: true,
     vars: {
       "--bg-primary":        "#f5f5f5",
