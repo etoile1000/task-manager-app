@@ -21,8 +21,12 @@ export interface DoovaBackground {
   isNew: boolean;
   isAnimated: true;
   /** Canvas描画関数。返り値のstop()で停止する */
-  render: (canvas: HTMLCanvasElement) => { stop: () => void };
+  render: (canvas: HTMLCanvasElement, options?: MountBackgroundOptions) => { stop: () => void };
 }
+
+export type MountBackgroundOptions = {
+  preview?: boolean;
+};
 
 /* ============================================================
    共通ユーティリティ
@@ -32,6 +36,22 @@ function resize(canvas: HTMLCanvasElement) {
   canvas.height = canvas.clientHeight;
 }
 
+function previewCount(count: number, options?: MountBackgroundOptions) {
+  return options?.preview ? Math.max(4, Math.floor(count * 0.28)) : count;
+}
+
+function previewSize(size: number, options?: MountBackgroundOptions) {
+  return options?.preview ? size * 0.65 : size;
+}
+
+function previewSpeed(speed: number, options?: MountBackgroundOptions) {
+  return options?.preview ? speed * 0.7 : speed;
+}
+
+function previewBlur(blur: number, options?: MountBackgroundOptions) {
+  return options?.preview ? blur * 0.5 : blur;
+}
+
 /* ============================================================
    1. 星空（enhanced）
    - 星の色を多様化・点滅速度をランダム化
@@ -39,17 +59,17 @@ function resize(canvas: HTMLCanvasElement) {
 ============================================================ */
 const stars: DoovaBackground = {
   id: "stars", name: "星空", emoji: "✨", isPro: true, isNew: false, isAnimated: true,
-  render(canvas) {
+  render(canvas, options) {
     resize(canvas);
     const ctx = canvas.getContext("2d")!;
     type Star = { x: number; y: number; r: number; phase: number; speed: number; color: string };
     const COLORS = ["#ffffff", "#e8e0ff", "#fcd34d", "#86efac", "#bfdbfe"];
-    const pool: Star[] = Array.from({ length: 140 }, () => ({
+    const pool: Star[] = Array.from({ length: previewCount(140, options) }, () => ({
       x: Math.random() * canvas.width,
       y: Math.random() * canvas.height,
-      r: Math.random() * 1.6 + 0.2,
+      r: previewSize(Math.random() * 1.6 + 0.2, options),
       phase: Math.random() * Math.PI * 2,
-      speed: Math.random() * 0.025 + 0.005,
+      speed: previewSpeed(Math.random() * 0.025 + 0.005, options),
       color: COLORS[Math.floor(Math.random() * COLORS.length)],
     }));
 
@@ -76,7 +96,7 @@ const stars: DoovaBackground = {
       });
 
       if (shoot.active) {
-        shoot.t += 5;
+        shoot.t += previewSpeed(5, options);
         const g = ctx.createLinearGradient(shoot.x + shoot.t - 80, 0, shoot.x + shoot.t, 0);
         g.addColorStop(0, "rgba(255,255,255,0)");
         g.addColorStop(1, "rgba(255,255,255,0.9)");
@@ -106,18 +126,18 @@ const stars: DoovaBackground = {
 ============================================================ */
 const neon_rain: DoovaBackground = {
   id: "neon_rain", name: "ネオン雨", emoji: "🌧", isPro: true, isNew: false, isAnimated: true,
-  render(canvas) {
+  render(canvas, options) {
     resize(canvas);
     const ctx = canvas.getContext("2d")!;
     const COLORS = ["#00ffff", "#ff00ff", "#f97316", "#00ff88", "#8b5cf6", "#ec4899"];
     type Drop = { x: number; y: number; sp: number; len: number; color: string; w: number; op: number };
-    const drops: Drop[] = Array.from({ length: 50 }, () => ({
+    const drops: Drop[] = Array.from({ length: previewCount(50, options) }, () => ({
       x: Math.random() * canvas.width,
       y: Math.random() * canvas.height,
-      sp: Math.random() * 6 + 3,
-      len: Math.random() * 35 + 12,
+      sp: previewSpeed(Math.random() * 6 + 3, options),
+      len: previewSize(Math.random() * 35 + 12, options),
       color: COLORS[Math.floor(Math.random() * COLORS.length)],
-      w: Math.random() * 1.5 + 0.5,
+      w: previewSize(Math.random() * 1.5 + 0.5, options),
       op: Math.random() * 0.5 + 0.35,
     }));
     let raf: number;
@@ -127,7 +147,7 @@ const neon_rain: DoovaBackground = {
       drops.forEach((d) => {
         ctx.save();
         ctx.shadowColor = d.color;
-        ctx.shadowBlur = 8;
+        ctx.shadowBlur = previewBlur(8, options);
         const g = ctx.createLinearGradient(d.x, d.y, d.x, d.y + d.len);
         g.addColorStop(0, "transparent");
         g.addColorStop(0.6, d.color);
@@ -157,23 +177,23 @@ const neon_rain: DoovaBackground = {
 ============================================================ */
 const sakura: DoovaBackground = {
   id: "sakura", name: "桜吹雪", emoji: "🌸", isPro: true, isNew: false, isAnimated: true,
-  render(canvas) {
+  render(canvas, options) {
     resize(canvas);
     const ctx = canvas.getContext("2d")!;
     const COLORS = ["#fda4af", "#f9a8d4", "#fbcfe8", "#f0abfc", "#fef3c7", "#fed7aa"];
     type Petal = { x: number; y: number; r: number; rot: number; rsp: number; vx: number; vy: number; color: string; op: number; wob: number; ws: number };
-    const petals: Petal[] = Array.from({ length: 45 }, () => ({
+    const petals: Petal[] = Array.from({ length: previewCount(45, options) }, () => ({
       x: Math.random() * canvas.width,
       y: Math.random() * canvas.height,
-      r: Math.random() * 6 + 3,
+      r: previewSize(Math.random() * 6 + 3, options),
       rot: Math.random() * 360,
-      rsp: Math.random() * 2.5 - 1.2,
-      vx: Math.random() * 0.6 - 0.3,
-      vy: Math.random() * 1.2 + 0.4,
+      rsp: previewSpeed(Math.random() * 2.5 - 1.2, options),
+      vx: previewSpeed(Math.random() * 0.6 - 0.3, options),
+      vy: previewSpeed(Math.random() * 1.2 + 0.4, options),
       color: COLORS[Math.floor(Math.random() * COLORS.length)],
       op: Math.random() * 0.45 + 0.45,
       wob: Math.random() * Math.PI * 2,
-      ws: Math.random() * 0.035 + 0.01,
+      ws: previewSpeed(Math.random() * 0.035 + 0.01, options),
     }));
 
     function drawPetal(r: number) {
@@ -222,7 +242,7 @@ const sakura: DoovaBackground = {
 ============================================================ */
 const thunder: DoovaBackground = {
   id: "thunder", name: "雷・稲妻", emoji: "⚡", isPro: true, isNew: true, isAnimated: true,
-  render(canvas) {
+  render(canvas, options) {
     resize(canvas);
     const ctx = canvas.getContext("2d")!;
 
@@ -239,8 +259,8 @@ const thunder: DoovaBackground = {
       const segs: Seg[] = [{ x, y: 0 }];
       let cx = x, cy = 0;
       while (cy < canvas.height * 0.85) {
-        cy += Math.random() * 28 + 12;
-        cx += Math.random() * 56 - 28;
+        cy += previewSize(Math.random() * 28 + 12, options);
+        cx += previewSize(Math.random() * 56 - 28, options);
         segs.push({ x: cx, y: cy });
       }
       // branches
@@ -281,7 +301,7 @@ const thunder: DoovaBackground = {
 
         ctx.save();
         ctx.shadowColor = "#9ab4ff";
-        ctx.shadowBlur = 18 * p;
+        ctx.shadowBlur = previewBlur(18 * p, options);
         ctx.strokeStyle = `rgba(190,210,255,${p * 0.9})`;
         ctx.lineWidth = 1.6 * p + 0.4;
         ctx.beginPath();
@@ -305,7 +325,7 @@ const thunder: DoovaBackground = {
       if (nextBolt <= 0) {
         bolts.push(makeBolt());
         flash = 10;
-        nextBolt = Math.floor(Math.random() * 100) + 40;
+        nextBolt = Math.floor((Math.random() * 100 + 40) / previewSpeed(1, options));
       }
       raf = requestAnimationFrame(draw);
     }
@@ -321,17 +341,17 @@ const thunder: DoovaBackground = {
 ============================================================ */
 const matrix: DoovaBackground = {
   id: "matrix", name: "マトリックス", emoji: "💻", isPro: true, isNew: true, isAnimated: true,
-  render(canvas) {
+  render(canvas, options) {
     resize(canvas);
     const ctx = canvas.getContext("2d")!;
-    const COL_W = 14;
+    const COL_W = options?.preview ? 20 : 14;
     const CHARS = "アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホABCDEFGHIJKLMN0123456789@#$%".split("");
     const cols = Math.floor(canvas.width / COL_W);
     type Col = { y: number; speed: number; trail: number };
     const drops: Col[] = Array.from({ length: cols }, () => ({
       y: Math.random() * (canvas.height / COL_W),
-      speed: Math.random() * 0.5 + 0.25,
-      trail: Math.floor(Math.random() * 6 + 4),
+      speed: previewSpeed(Math.random() * 0.5 + 0.25, options),
+      trail: Math.floor(previewSize(Math.random() * 6 + 4, options)),
     }));
     let raf: number;
 
@@ -377,7 +397,7 @@ const matrix: DoovaBackground = {
 ============================================================ */
 const aurora: DoovaBackground = {
   id: "aurora", name: "オーロラ", emoji: "🌌", isPro: true, isNew: true, isAnimated: true,
-  render(canvas) {
+  render(canvas, options) {
     resize(canvas);
     const ctx = canvas.getContext("2d")!;
     type Band = { color: string; freq: number; phase: number; amp: number; yRatio: number; alpha: number };
@@ -409,11 +429,11 @@ const aurora: DoovaBackground = {
 
         // build wavy path
         ctx.save();
-        ctx.filter = "blur(14px)";
+        ctx.filter = `blur(${previewBlur(14, options)}px)`;
         ctx.beginPath();
         ctx.moveTo(0, H);
         for (let x = 0; x <= W; x += 3) {
-          const wave = Math.sin(x * b.freq + t * 0.018 + b.phase) * b.amp * H;
+          const wave = Math.sin(x * b.freq + t * previewSpeed(0.018, options) + b.phase) * previewSize(b.amp * H, options);
           ctx.lineTo(x, baseY + wave);
         }
         ctx.lineTo(W, H);
@@ -447,20 +467,20 @@ const aurora: DoovaBackground = {
 ============================================================ */
 const sand: DoovaBackground = {
   id: "sand", name: "砂嵐", emoji: "🏜", isPro: true, isNew: true, isAnimated: true,
-  render(canvas) {
+  render(canvas, options) {
     resize(canvas);
     const ctx = canvas.getContext("2d")!;
     const COLORS = ["#f97316", "#ec4899", "#fcd34d", "#fb923c", "#fbbf24"];
     type Particle = { x: number; y: number; vx: number; vy: number; r: number; color: string; op: number; life: number; maxLife: number };
 
-    const particles: Particle[] = Array.from({ length: 320 }, () => {
+    const particles: Particle[] = Array.from({ length: previewCount(320, options) }, () => {
       const ml = Math.random() * 120 + 60;
       return {
         x: Math.random() * canvas.width,
         y: Math.random() * canvas.height,
-        vx: Math.random() * 2.5 + 0.5,
-        vy: Math.random() * 0.6 - 0.3,
-        r: Math.random() * 1.5 + 0.25,
+        vx: previewSpeed(Math.random() * 2.5 + 0.5, options),
+        vy: previewSpeed(Math.random() * 0.6 - 0.3, options),
+        r: previewSize(Math.random() * 1.5 + 0.25, options),
         color: COLORS[Math.floor(Math.random() * COLORS.length)],
         op: Math.random() * 0.45 + 0.2,
         life: Math.random() * ml,
@@ -517,16 +537,16 @@ const sand: DoovaBackground = {
 ============================================================ */
 const meteor: DoovaBackground = {
   id: "meteor", name: "流星群", emoji: "🌠", isPro: true, isNew: true, isAnimated: true,
-  render(canvas) {
+  render(canvas, options) {
     resize(canvas);
     const ctx = canvas.getContext("2d")!;
     const STAR_COLORS = ["#fff", "#e8e0ff", "#fcd34d", "#86efac", "#bfdbfe"];
 
     // static stars
-    const stars = Array.from({ length: 90 }, () => ({
+    const stars = Array.from({ length: previewCount(90, options) }, () => ({
       x: Math.random() * canvas.width,
       y: Math.random() * canvas.height,
-      r: Math.random() * 0.9 + 0.15,
+      r: previewSize(Math.random() * 0.9 + 0.15, options),
       phase: Math.random() * Math.PI * 2,
       color: STAR_COLORS[Math.floor(Math.random() * STAR_COLORS.length)],
     }));
@@ -541,14 +561,14 @@ const meteor: DoovaBackground = {
       meteors.push({
         x: Math.random() * canvas.width,
         y: Math.random() * canvas.height * 0.4,
-        vx: Math.random() * 7 + 4,
-        vy: Math.random() * 4 + 2,
-        len: Math.random() * 90 + 40,
+        vx: previewSpeed(Math.random() * 7 + 4, options),
+        vy: previewSpeed(Math.random() * 4 + 2, options),
+        len: previewSize(Math.random() * 90 + 40, options),
         color: COLS[Math.floor(Math.random() * COLS.length)],
         life: 55,
         maxLife: 55,
       });
-      spawnTimer = setTimeout(spawnMeteor, Math.random() * 1400 + 500);
+      spawnTimer = setTimeout(spawnMeteor, Math.random() * 1800 + 900);
     }
     spawnMeteor();
 
@@ -565,7 +585,7 @@ const meteor: DoovaBackground = {
 
       // stars
       stars.forEach((s) => {
-        s.phase += 0.01;
+        s.phase += previewSpeed(0.01, options);
         ctx.globalAlpha = 0.2 + Math.sin(s.phase) * 0.25 + 0.3;
         ctx.beginPath();
         ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
@@ -634,10 +654,11 @@ export const BACKGROUND_LIST = Object.values(BACKGROUNDS);
 ============================================================ */
 export function mountBackground(
   canvas: HTMLCanvasElement,
-  id: BackgroundId
+  id: BackgroundId,
+  options?: MountBackgroundOptions,
 ): () => void {
   const bg = BACKGROUNDS[id];
   if (!bg) return () => {};
-  const { stop } = bg.render(canvas);
+  const { stop } = bg.render(canvas, options);
   return stop;
 }

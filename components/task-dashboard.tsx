@@ -168,7 +168,7 @@ function BackgroundPreviewCanvas({ id }: { id: string }) {
     const start = () => {
       if (!mounted || stop) return;
       resize();
-      stop = mountBackground(canvas, background.id);
+      stop = mountBackground(canvas, background.id, { preview: true });
     };
 
     const observer = new ResizeObserver(() => {
