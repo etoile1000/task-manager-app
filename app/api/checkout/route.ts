@@ -2,8 +2,6 @@ import { NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
 import { createClient } from "@/lib/supabase-server";
 
-const PRO_TRIAL_DAYS = 7;
-
 function getStripe(): Stripe {
   const key = process.env.STRIPE_SECRET_KEY;
   if (!key) throw new Error("STRIPE_SECRET_KEY is not set");
@@ -91,15 +89,7 @@ export async function GET(req: NextRequest) {
 
     if (mode === "subscription") {
       params.payment_method_collection = "always";
-      params.subscription_data = {
-        metadata,
-        trial_period_days: PRO_TRIAL_DAYS,
-        trial_settings: {
-          end_behavior: {
-            missing_payment_method: "cancel",
-          },
-        },
-      };
+      params.subscription_data = { metadata };
     } else {
       params.payment_intent_data = { metadata };
     }
@@ -109,7 +99,6 @@ export async function GET(req: NextRequest) {
       priceId,
       mode,
       recurring: Boolean(price.recurring),
-      trialPeriodDays: mode === "subscription" ? PRO_TRIAL_DAYS : null,
       paymentMethodCollection: params.payment_method_collection ?? null,
     });
 
