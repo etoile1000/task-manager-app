@@ -260,7 +260,7 @@ const bubble: DoovaBackground = {
       wob: Math.random() * Math.PI * 2,
       ws: previewSpeed(Math.random() * 0.025 + 0.01, options),
       amp: previewSize(Math.random() * 1.5 + 0.6, options),
-      op: Math.random() * 0.25 + 0.25,
+      op: Math.random() * 0.22 + 0.34,
     });
 
     const bubbles = Array.from(
@@ -280,18 +280,33 @@ const bubble: DoovaBackground = {
         b.y -= b.vy;
 
         const grad = ctx.createLinearGradient(b.x - b.r, b.y - b.r, b.x + b.r, b.y + b.r);
-        grad.addColorStop(0, "rgba(255,255,255,0.75)");
-        grad.addColorStop(0.35, "rgba(56,189,248,0.55)");
-        grad.addColorStop(0.7, "rgba(236,72,153,0.45)");
-        grad.addColorStop(1, "rgba(249,115,22,0.35)");
+        grad.addColorStop(0, "rgba(255,255,255,0.82)");
+        grad.addColorStop(0.25, "rgba(14,165,233,0.72)");
+        grad.addColorStop(0.52, "rgba(236,72,153,0.64)");
+        grad.addColorStop(0.78, "rgba(16,185,129,0.58)");
+        grad.addColorStop(1, "rgba(249,115,22,0.5)");
+
+        const fill = ctx.createRadialGradient(
+          b.x - b.r * 0.35,
+          b.y - b.r * 0.35,
+          0,
+          b.x,
+          b.y,
+          b.r,
+        );
+        fill.addColorStop(0, "rgba(255,255,255,0.16)");
+        fill.addColorStop(0.45, "rgba(125,211,252,0.08)");
+        fill.addColorStop(1, "rgba(255,255,255,0.04)");
 
         ctx.save();
         ctx.globalAlpha = b.op;
+        ctx.shadowColor = "rgba(56,189,248,0.35)";
+        ctx.shadowBlur = previewBlur(7, options);
         ctx.beginPath();
         ctx.arc(b.x, b.y, b.r, 0, Math.PI * 2);
-        ctx.fillStyle = "rgba(255,255,255,0.06)";
+        ctx.fillStyle = fill;
         ctx.fill();
-        ctx.lineWidth = previewSize(1.3, options);
+        ctx.lineWidth = previewSize(2, options);
         ctx.strokeStyle = grad;
         ctx.stroke();
 
