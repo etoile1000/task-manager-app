@@ -90,41 +90,122 @@ function printBadgeClass(p: Priority) {
   )[p] ?? "p-mid";
 }
 
-const SAKURA_PREVIEW_PETALS = [
-  { left: "12%", top: "8%", w: 9, h: 5, rot: -25, color: "#f9a8d4" },
-  { left: "55%", top: "18%", w: 7, h: 4, rot: 40, color: "#fda4af" },
-  { left: "72%", top: "42%", w: 8, h: 5, rot: -15, color: "#fbcfe8" },
-  { left: "28%", top: "52%", w: 10, h: 6, rot: 55, color: "#f9a8d4" },
-  { left: "48%", top: "68%", w: 6, h: 4, rot: 10, color: "#c4b5fd" },
-  { left: "8%", top: "62%", w: 7, h: 4, rot: -40, color: "#fecdd3" },
-] as const;
-
 function EffectOptionPreview({ id }: { id: EffectId }) {
   return (
     <div className="effect-opt-preview" aria-hidden>
-      {id === "none" && <span className="effect-preview-none">OFF</span>}
-      {id === "ko" && <span className="effect-preview-ko">K.O!</span>}
-      {id === "pen" && <span className="effect-preview-pen" />}
-      {id === "beam" && <span className="effect-preview-beam" />}
-      {id === "confetti" && (
-        <div className="effect-preview-confetti">
-          {SAKURA_PREVIEW_PETALS.map((p, i) => (
-            <span
-              key={i}
-              className="effect-preview-petal"
-              style={{
-                left: p.left,
-                top: p.top,
-                width: p.w,
-                height: p.h,
-                transform: `rotate(${p.rot}deg)`,
-                background: ["#f97316", "#ec4899", "#8b5cf6", "#fcd34d"][i % 4],
-                borderRadius: i % 2 === 0 ? 2 : "50%",
-              }}
-            />
+      {id === "none" ? <i className="ti ti-minus effect-preview-none" /> : null}
+      {id === "ko" ? (
+        <svg width="100%" height="100%" viewBox="0 0 64 40" xmlns="http://www.w3.org/2000/svg">
+          <rect width="64" height="40" fill="#08060f" />
+          <circle cx="32" cy="20" r="18" fill="none" stroke="#f97316" strokeWidth="0.6" opacity="0.5" />
+          <circle cx="32" cy="20" r="12" fill="none" stroke="#ec4899" strokeWidth="0.6" opacity="0.6" />
+          <circle cx="32" cy="20" r="6" fill="none" stroke="#8b5cf6" strokeWidth="0.6" opacity="0.7" />
+          <line x1="14" y1="20" x2="4" y2="20" stroke="#f97316" strokeWidth="0.8" opacity="0.6" />
+          <line x1="50" y1="20" x2="60" y2="20" stroke="#f97316" strokeWidth="0.8" opacity="0.6" />
+          <line x1="32" y1="2" x2="32" y2="0" stroke="#ec4899" strokeWidth="0.8" opacity="0.6" />
+          <line x1="32" y1="38" x2="32" y2="40" stroke="#ec4899" strokeWidth="0.8" opacity="0.6" />
+          <line x1="19" y1="7" x2="14" y2="2" stroke="#8b5cf6" strokeWidth="0.8" opacity="0.5" />
+          <line x1="45" y1="7" x2="50" y2="2" stroke="#8b5cf6" strokeWidth="0.8" opacity="0.5" />
+          <line x1="19" y1="33" x2="14" y2="38" stroke="#8b5cf6" strokeWidth="0.8" opacity="0.5" />
+          <line x1="45" y1="33" x2="50" y2="38" stroke="#8b5cf6" strokeWidth="0.8" opacity="0.5" />
+          <defs>
+            <linearGradient id="ef-kg" x1="0" y1="0" x2="1" y2="0">
+              <stop offset="0%" stopColor="#f97316" />
+              <stop offset="50%" stopColor="#ec4899" />
+              <stop offset="100%" stopColor="#8b5cf6" />
+            </linearGradient>
+          </defs>
+          <text x="32" y="25" textAnchor="middle" fontFamily="'Outfit',sans-serif" fontSize="13" fontWeight="700" letterSpacing="-0.5" fill="url(#ef-kg)">K.O!</text>
+        </svg>
+      ) : null}
+      {id === "pen" ? (
+        <svg width="100%" height="100%" viewBox="0 0 64 40" xmlns="http://www.w3.org/2000/svg">
+          <rect width="64" height="40" fill="#0e0a06" />
+          <defs>
+            <linearGradient id="ef-slg" x1="0" y1="0" x2="1" y2="0">
+              <stop offset="0%" stopColor="#f97316" stopOpacity="0" />
+              <stop offset="40%" stopColor="#f97316" stopOpacity="0.3" />
+              <stop offset="75%" stopColor="#f97316" stopOpacity="1" />
+              <stop offset="100%" stopColor="#fcd34d" stopOpacity="1" />
+            </linearGradient>
+          </defs>
+          <line x1="6" y1="20" x2="58" y2="20" stroke="url(#ef-slg)" strokeWidth="6" strokeLinecap="round" opacity="0.12" />
+          <line x1="6" y1="20" x2="58" y2="20" stroke="url(#ef-slg)" strokeWidth="2.5" strokeLinecap="round" />
+          <circle cx="58" cy="20" r="6" fill="#f97316" opacity="0.15" />
+          <circle cx="58" cy="20" r="3" fill="#fcd34d" opacity="0.9" />
+        </svg>
+      ) : null}
+      {id === "beam" ? (
+        <svg width="100%" height="100%" viewBox="0 0 64 40" xmlns="http://www.w3.org/2000/svg">
+          <rect width="64" height="40" fill="#06040f" />
+          <defs>
+            <linearGradient id="ef-b1" x1="0" y1="0" x2="1" y2="0">
+              <stop offset="0%" stopColor="#f97316" stopOpacity="0" />
+              <stop offset="30%" stopColor="#f97316" stopOpacity="0.9" />
+              <stop offset="70%" stopColor="#f97316" stopOpacity="0.9" />
+              <stop offset="100%" stopColor="#f97316" stopOpacity="0" />
+            </linearGradient>
+            <linearGradient id="ef-b2" x1="0" y1="0" x2="1" y2="0">
+              <stop offset="0%" stopColor="#ec4899" stopOpacity="0" />
+              <stop offset="20%" stopColor="#ec4899" stopOpacity="0.8" />
+              <stop offset="60%" stopColor="#ec4899" stopOpacity="0.8" />
+              <stop offset="100%" stopColor="#ec4899" stopOpacity="0" />
+            </linearGradient>
+            <linearGradient id="ef-b3" x1="0" y1="0" x2="1" y2="0">
+              <stop offset="0%" stopColor="#8b5cf6" stopOpacity="0" />
+              <stop offset="40%" stopColor="#8b5cf6" stopOpacity="0.7" />
+              <stop offset="80%" stopColor="#8b5cf6" stopOpacity="0.7" />
+              <stop offset="100%" stopColor="#8b5cf6" stopOpacity="0" />
+            </linearGradient>
+          </defs>
+          <line x1="0" y1="19" x2="64" y2="19" stroke="url(#ef-b1)" strokeWidth="8" opacity="0.15" />
+          <line x1="0" y1="19" x2="64" y2="19" stroke="url(#ef-b1)" strokeWidth="3" />
+          <line x1="0" y1="25" x2="64" y2="25" stroke="url(#ef-b2)" strokeWidth="5" opacity="0.12" />
+          <line x1="0" y1="25" x2="64" y2="25" stroke="url(#ef-b2)" strokeWidth="1.8" />
+          <line x1="0" y1="14" x2="64" y2="14" stroke="url(#ef-b3)" strokeWidth="4" opacity="0.1" />
+          <line x1="0" y1="14" x2="64" y2="14" stroke="url(#ef-b3)" strokeWidth="1.4" />
+        </svg>
+      ) : null}
+      {id === "firework" ? (
+        <svg width="100%" height="100%" viewBox="0 0 64 40" xmlns="http://www.w3.org/2000/svg">
+          <rect width="64" height="40" fill="#070510" />
+          <defs>
+            <radialGradient id="fw-glow" cx="50%" cy="45%" r="60%">
+              <stop offset="0%" stopColor="#f97316" stopOpacity="0.35" />
+              <stop offset="55%" stopColor="#ec4899" stopOpacity="0.12" />
+              <stop offset="100%" stopColor="#8b5cf6" stopOpacity="0" />
+            </radialGradient>
+          </defs>
+          <rect width="64" height="40" fill="url(#fw-glow)" />
+          {[[31, 18, "#f97316"], [18, 26, "#ec4899"], [45, 25, "#8b5cf6"]].map(([cx, cy, color], idx) => (
+            <g key={idx} opacity="0.85">
+              {Array.from({ length: 8 }).map((_, i) => {
+                const angle = (Math.PI * 2 * i) / 8;
+                const x2 = Number(cx) + Math.cos(angle) * (idx === 0 ? 10 : 6);
+                const y2 = Number(cy) + Math.sin(angle) * (idx === 0 ? 10 : 6);
+                return <line key={i} x1={cx} y1={cy} x2={x2} y2={y2} stroke={String(color)} strokeWidth="0.8" strokeLinecap="round" />;
+              })}
+              <circle cx={cx} cy={cy} r="1.5" fill={String(color)} />
+            </g>
           ))}
-        </div>
-      )}
+        </svg>
+      ) : null}
+      {id === "confetti" ? (
+        <svg width="100%" height="100%" viewBox="0 0 64 40" xmlns="http://www.w3.org/2000/svg">
+          <rect width="64" height="40" fill="#08060f" />
+          <defs>
+            <linearGradient id="cf-bg" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stopColor="#f97316" stopOpacity="0.22" />
+              <stop offset="50%" stopColor="#ec4899" stopOpacity="0.18" />
+              <stop offset="100%" stopColor="#8b5cf6" stopOpacity="0.2" />
+            </linearGradient>
+          </defs>
+          <rect width="64" height="40" fill="url(#cf-bg)" />
+          {[[10, 8, "#f97316"], [22, 14, "#ec4899"], [36, 7, "#8b5cf6"], [50, 13, "#fcd34d"], [15, 27, "#38bdf8"], [30, 30, "#34d399"], [45, 25, "#fb923c"], [55, 31, "#f472b6"], [7, 20, "#a78bfa"]].map(([x, y, color], i) => (
+            <rect key={i} x={x} y={y} width="5" height="2.5" rx="0.8" fill={String(color)} transform={`rotate(${i * 23} ${x} ${y})`} />
+          ))}
+        </svg>
+      ) : null}
     </div>
   );
 }
